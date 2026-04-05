@@ -1,0 +1,154 @@
+import { useState } from "react";
+import { Plus, Minus, Check, ChevronDown } from "lucide-react";
+import { ImageWithFallback } from "./figma/ImageWithFallback";
+
+interface ProductCardProps {
+  image: string;
+  title: string;
+  description: string;
+  price: string;
+  badge?: string;
+  extras?: string[];
+}
+
+const defaultExtras = [
+  "Extra Käse",
+  "Extra Sauce",
+  "Keine Zwiebeln",
+  "Extra Scharf 🌶️",
+  "Keine Oliven",
+];
+
+export function ProductCard({
+  image,
+  title,
+  description,
+  price,
+  badge,
+  extras,
+}: ProductCardProps) {
+  const [customizeOpen, setCustomizeOpen] = useState(false);
+  const [selected, setSelected] = useState<string[]>([]);
+  const [qty, setQty] = useState(1);
+
+  const toggle = (item: string) => {
+    setSelected((prev) =>
+      prev.includes(item) ? prev.filter((i) => i !== item) : [...prev, item]
+    );
+  };
+
+  const extrasList = extras ?? defaultExtras;
+
+  return (
+    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 group flex flex-col">
+      {/* Image */}
+      <div className="relative overflow-hidden h-48">
+        <ImageWithFallback
+          src={image}
+          alt={title}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        />
+        {/* Badge */}
+        {badge && (
+          <div
+            className="absolute top-3 left-3 text-white text-xs font-bold px-3 py-1 rounded-full shadow"
+            style={{ backgroundColor: "#ec6408" }}
+          >
+            {badge}
+          </div>
+        )}
+        {/* Price Badge */}
+        <div
+          className="absolute bottom-3 right-3 w-14 h-14 rounded-full flex flex-col items-center justify-center text-white shadow-lg"
+          style={{ backgroundColor: "#ec6408" }}
+        >
+          <span style={{ fontSize: "0.7rem", fontWeight: 700, lineHeight: 1 }}>ab</span>
+          <span style={{ fontSize: "0.9rem", fontWeight: 900, lineHeight: 1.1 }}>{price}</span>
+        </div>
+      </div>
+
+      {/* Body */}
+      <div className="p-4 flex flex-col flex-1">
+        <h3 className="text-gray-900" style={{ fontWeight: 700, fontSize: "1rem" }}>
+          {title}
+        </h3>
+        <p className="text-gray-500 mt-1 flex-1" style={{ fontSize: "0.8rem", lineHeight: 1.4 }}>
+          {description}
+        </p>
+
+        {/* Customize toggle */}
+        <button
+          onClick={() => setCustomizeOpen(!customizeOpen)}
+          className="mt-3 flex items-center gap-1 text-xs font-bold transition-colors"
+          style={{ color: "#ec6408" }}
+        >
+          <ChevronDown
+            size={14}
+            className={`transition-transform duration-200 ${customizeOpen ? "rotate-180" : ""}`}
+          />
+          Zutaten anpassen
+        </button>
+
+        {/* Customize Panel */}
+        {customizeOpen && (
+          <div className="mt-3 p-3 bg-orange-50 rounded-xl border border-orange-100">
+            <p className="text-xs font-bold text-gray-700 mb-2">Extras & Wünsche:</p>
+            <div className="space-y-1">
+              {extrasList.map((item) => (
+                <label
+                  key={item}
+                  className="flex items-center gap-2 cursor-pointer group/item"
+                >
+                  <div
+                    className={`w-4 h-4 rounded flex items-center justify-center border transition-all ${
+                      selected.includes(item)
+                        ? "border-orange-500"
+                        : "border-gray-300"
+                    }`}
+                    style={selected.includes(item) ? { backgroundColor: "#ec6408" } : {}}
+                    onClick={() => toggle(item)}
+                  >
+                    {selected.includes(item) && <Check size={10} className="text-white" />}
+                  </div>
+                  <span
+                    className="text-xs text-gray-600 group-hover/item:text-gray-900 transition-colors"
+                    onClick={() => toggle(item)}
+                  >
+                    {item}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Qty + Add */}
+        <div className="mt-4 flex items-center gap-2">
+          <div className="flex items-center gap-1 bg-gray-100 rounded-full px-2 py-1">
+            <button
+              onClick={() => setQty((q) => Math.max(1, q - 1))}
+              className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+            >
+              <Minus size={12} className="text-gray-600" />
+            </button>
+            <span className="w-5 text-center text-sm font-bold text-gray-800">{qty}</span>
+            <button
+              onClick={() => setQty((q) => q + 1)}
+              className="w-6 h-6 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors"
+            >
+              <Plus size={12} className="text-gray-600" />
+            </button>
+          </div>
+          <a href="tel:01771313310" className="flex-1">
+            <button
+              className="w-full py-2 rounded-full text-white text-sm font-bold hover:opacity-90 hover:scale-105 transition-all duration-200"
+              style={{ backgroundColor: "#ec6408" }}
+            >
+              Bestellen
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+  );
+}
