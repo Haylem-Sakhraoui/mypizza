@@ -3,8 +3,8 @@ import { Hero } from "./components/Hero";
 import { MenuNav } from "./components/MenuNav";
 import { FrenchTacosSection } from "./components/FrenchTacosSection";
 import { PizzaSection } from "./components/PizzaSection";
-import { UnserepizzenSection } from "./components/UnserepizzenSection";
 import { SnacksSection } from "./components/SnacksSection";
+import { KinderMenuSection } from "./components/KinderMenuSection";
 import { BurgersSection } from "./components/BurgersSection";
 import { SpecialOffers } from "./components/SpecialOffers";
 import { SaucesSection } from "./components/SaucesSection";
@@ -14,15 +14,16 @@ import { Footer } from "./components/Footer";
 
 export default function App() {
   return (
+    
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <Hero />
       <MenuNav />
       <FrenchTacosSection />
       <PizzaSection />
-      <UnserepizzenSection />
       <SpecialOffers />
       <SnacksSection />
+      <KinderMenuSection />
       <BurgersSection />
       <SaucesSection />
       <BuildYourPizza />

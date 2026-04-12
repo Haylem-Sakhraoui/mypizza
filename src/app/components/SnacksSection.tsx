@@ -4,7 +4,7 @@ const snacks = [
   {
     id: 1,
     image:
-      "https://images.unsplash.com/photo-1605291581926-df4bf7ee3e89?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600",
+      "https://media.istockphoto.com/id/1214299642/fr/photo/p%C3%A9pites-de-poulet-maison-isol%C3%A9es-sur-fond-blanc.webp?a=1&b=1&s=612x612&w=0&k=20&c=R2boGiIBBO-Z79juLFIXwqm-7pPBwdFLhhNAIPBnysM=",
     title: "Chicken Nuggets",
     description:
       "6 oder 9 knusprige Chicken Nuggets mit Dip-Sauce deiner Wahl",
@@ -24,22 +24,13 @@ const snacks = [
   {
     id: 3,
     image:
-      "https://images.unsplash.com/photo-1734774797087-b6435057a15e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600",
+      "https://media.istockphoto.com/id/1405543873/fr/photo/savoureuses-frites-fran%C3%A7ais-avec-mayonnaise-et-ketchup-dans-un-bol-en-c%C3%A9ramique.webp?a=1&b=1&s=612x612&w=0&k=20&c=ogaIHGtzCKYSVzZE9rmxKaG9i5AifbK9lfmAnZGlNpk=",
     title: "Pommes",
     description:
       "Goldene Pommes frites, knusprig & heiß – mit Ketchup oder Mayo",
     price: "3,50€",
   },
-  {
-    id: 4,
-    image:
-      "https://images.unsplash.com/photo-1760533536738-f0965fd52354?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=600",
-    title: "Crispy Chicken",
-    description:
-      "Knusprig paniertes Hähnchenfilet, serviert mit Dip-Sauce",
-    price: "5,90€",
-    badge: "Neu",
-  },
+  
 ];
 
 export function SnacksSection() {
@@ -81,7 +72,6 @@ export function SnacksSection() {
               title={snack.title}
               description={snack.description}
               price={snack.price}
-              badge={snack.badge}
               extras={[
                 "Extra Dip-Sauce",
                 "Extra Scharf 🌶️",

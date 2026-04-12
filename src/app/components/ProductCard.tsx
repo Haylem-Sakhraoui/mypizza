@@ -62,7 +62,6 @@ export function ProductCard({
           className="absolute bottom-3 right-3 w-14 h-14 rounded-full flex flex-col items-center justify-center text-white shadow-lg"
           style={{ backgroundColor: "#ec6408" }}
         >
-          <span style={{ fontSize: "0.7rem", fontWeight: 700, lineHeight: 1 }}>ab</span>
           <span style={{ fontSize: "0.9rem", fontWeight: 900, lineHeight: 1.1 }}>{price}</span>
         </div>
       </div>
