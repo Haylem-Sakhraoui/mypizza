@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Plus, Minus, Check, ChevronDown } from "lucide-react";
+import { Plus, Minus, Check, ChevronDown, ShoppingCart } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { useCart } from "../context/CartContext";
 
 interface ProductCardProps {
   image: string;
@@ -30,6 +31,8 @@ export function ProductCard({
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
   const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(false);
+  const { addItem } = useCart();
 
   const toggle = (item: string) => {
     setSelected((prev) =>
@@ -143,9 +146,40 @@ export function ProductCard({
               className="w-full py-2 rounded-full text-white text-sm font-bold hover:opacity-90 hover:scale-105 transition-all duration-200"
               style={{ backgroundColor: "#ec6408" }}
             >
-              Bestellen
+              Anrufen
             </button>
           </a>
+          <button
+            className={`flex-1 py-2 rounded-full text-white text-sm font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${
+              added ? "bg-green-500" : "hover:opacity-90 hover:scale-105"
+            }`}
+            style={!added ? { backgroundColor: "#ec6408" } : {}}
+            onClick={() => {
+              // Parse price: "9,00€" → 9.00
+              const numericPrice = parseFloat(
+                price.replace("€", "").replace(",", ".")
+              );
+              for (let i = 0; i < qty; i++) {
+                addItem({
+                  id: `${title}-${numericPrice}`,
+                  name: title,
+                  price: numericPrice,
+                });
+              }
+              setAdded(true);
+              setTimeout(() => setAdded(false), 1200);
+            }}
+          >
+            {added ? (
+              <>
+                <Check size={14} /> Hinzugefügt
+              </>
+            ) : (
+              <>
+                <ShoppingCart size={14} /> In den Warenkorb
+              </>
+            )}
+          </button>
         </div>
       </div>
     </div>

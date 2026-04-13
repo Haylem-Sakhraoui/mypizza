@@ -1,9 +1,13 @@
 import { useState, useEffect } from "react";
-import { Phone, Menu, X } from "lucide-react";
+import { Phone, Menu, X, ShoppingBag } from "lucide-react";
+import { useCart } from "../context/CartContext";
+import { CartDrawer } from "./CartDrawer";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const { itemCount } = useCart();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -78,6 +82,21 @@ export function Navbar() {
                 Jetzt bestellen
               </button>
             </a>
+            {/* Cart button */}
+            <button
+              onClick={() => setCartOpen(true)}
+              className="relative p-2 rounded-full hover:bg-orange-50 transition-colors"
+            >
+              <ShoppingBag size={22} style={{ color: "#ec6408" }} />
+              {itemCount > 0 && (
+                <span
+                  className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs font-bold flex items-center justify-center"
+                  style={{ backgroundColor: "#ec6408" }}
+                >
+                  {itemCount}
+                </span>
+              )}
+            </button>
             {/* Mobile menu toggle */}
             <button
               className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
@@ -116,6 +135,7 @@ export function Navbar() {
           </div>
         )}
       </div>
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </nav>
   );
 }
