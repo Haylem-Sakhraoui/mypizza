@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 
 export interface CartItem {
   id: string;
@@ -17,10 +17,45 @@ interface CartContextType {
   itemCount: number;
 }
 
+const CART_STORAGE_KEY = "mypizza_cart";
+
+function loadCartFromStorage(): CartItem[] {
+  try {
+    const raw = localStorage.getItem(CART_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    // Validate shape to avoid corrupt data crashing the app
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter(
+      (i) =>
+        typeof i.id === "string" &&
+        typeof i.name === "string" &&
+        typeof i.price === "number" &&
+        typeof i.qty === "number"
+    );
+  } catch {
+    return [];
+  }
+}
+
+function saveCartToStorage(items: CartItem[]) {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
+  } catch {
+    // localStorage may be unavailable (e.g. private browsing quota)
+  }
+}
+
 const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
+  // Hydrate from localStorage on first render
+  const [items, setItems] = useState<CartItem[]>(() => loadCartFromStorage());
+
+  // Persist every change to localStorage
+  useEffect(() => {
+    saveCartToStorage(items);
+  }, [items]);
 
   const addItem = useCallback((item: Omit<CartItem, "qty">) => {
     setItems((prev) => {
@@ -48,7 +83,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
-  const clearCart = useCallback(() => setItems([]), []);
+  const clearCart = useCallback(() => {
+    setItems([]);
+    // Explicitly clear storage so it doesn't re-hydrate after payment
+    try {
+      localStorage.removeItem(CART_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const total = items.reduce((sum, i) => sum + i.price * i.qty, 0);
   const itemCount = items.reduce((sum, i) => sum + i.qty, 0);
