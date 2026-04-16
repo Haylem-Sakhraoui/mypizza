@@ -1,6 +1,9 @@
 import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { PayPalButton } from "./PayPalButton";
+import { DeliveryForm } from "./DeliveryForm";
+import { useState, useCallback } from "react";
+import type { CustomerInfo } from "../lib/supabase";
 
 interface CartDrawerProps {
   open: boolean;
@@ -9,6 +12,9 @@ interface CartDrawerProps {
 
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const { items, removeItem, updateQty, total, clearCart } = useCart();
+  // null = form not yet valid; CustomerInfo = form valid and ready to pay
+  const [customer, setCustomer] = useState<CustomerInfo | null>(null);
+  const handleValid = useCallback((info: CustomerInfo) => setCustomer(info), []);
 
   return (
     <>
@@ -110,9 +116,10 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             )}
           </div>
 
-          {/* Footer: Total + PayPal */}
+          {/* Footer: Total + Delivery Form + PayPal */}
           {items.length > 0 && (
-            <div className="border-t border-gray-100 p-4 space-y-4">
+            <div className="border-t border-gray-100 p-4 space-y-4 overflow-y-auto max-h-[60vh]">
+              {/* Order total */}
               <div className="flex items-center justify-between">
                 <span className="text-base font-bold text-gray-900">Gesamtbetrag</span>
                 <span
@@ -122,7 +129,23 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   {total.toFixed(2).replace(".", ",")} €
                 </span>
               </div>
-              <PayPalButton />
+
+              {/* Step 1: Delivery form — always visible when there are items */}
+              <DeliveryForm onValid={handleValid} />
+
+              {/* Step 2: PayPal buttons — only appear once form is valid */}
+              {customer && (
+                <div className="pt-1">
+                  <PayPalButton customer={customer} />
+                </div>
+              )}
+
+              {/* Hint shown before form is complete */}
+              {!customer && (
+                <p className="text-center text-xs text-gray-400">
+                  Bitte füllen Sie die Lieferadresse aus, um fortzufahren.
+                </p>
+              )}
             </div>
           )}
         </div>

@@ -1,28 +1,33 @@
 import { PayPalButtons } from "@paypal/react-paypal-js";
 import { useCart } from "../context/CartContext";
-import { saveOrder } from "../lib/supabase";
+import { upsertPendingOrder, markOrderPaid, type CustomerInfo } from "../lib/supabase";
 import { generateReceipt } from "../lib/receipt";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
-// Detect if the failure is a network connectivity issue
 function isNetworkError(err: unknown): boolean {
   if (err instanceof ProgressEvent) return true;
-  if (err instanceof TypeError && typeof (err as TypeError).message === "string") {
+  if (err instanceof TypeError) {
     const msg = (err as TypeError).message.toLowerCase();
     return msg.includes("network") || msg.includes("failed to fetch") || msg.includes("load");
   }
   return !navigator.onLine;
 }
 
-export function PayPalButton() {
+interface PayPalButtonProps {
+  customer: CustomerInfo;
+}
+
+export function PayPalButton({ customer }: PayPalButtonProps) {
   const { items, total, clearCart } = useCart();
   const [status, setStatus] = useState<"idle" | "processing" | "success" | "error" | "cancelled">("idle");
   const [message, setMessage] = useState("");
 
-  if (items.length === 0) return null;
+  // Hold the Supabase order UUID between createOrder → onApprove
+  const supabaseOrderIdRef = useRef<string | null>(null);
 
-  // Guard: prevent createOrder from being called with a zero/negative total
   const safeTotal = Math.max(0.01, total);
+
+  if (items.length === 0) return null;
 
   return (
     <div className="space-y-3">
@@ -45,33 +50,54 @@ export function PayPalButton() {
       <PayPalButtons
         style={{ layout: "vertical", shape: "rect", label: "pay" }}
         disabled={status === "processing"}
-        createOrder={(_data, actions) => {
-          // Check network before even trying
+        createOrder={async (_data, actions) => {
           if (!navigator.onLine) {
             setStatus("error");
-            setMessage("Verbindung unterbrochen. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.");
-            return Promise.reject(new Error("offline"));
+            setMessage("Verbindung unterbrochen. Bitte prüfen Sie Ihre Internetverbindung.");
+            throw new Error("offline");
           }
 
           setStatus("processing");
           setMessage("");
 
+          // ── 1. Insert pending order into Supabase first ───────────────────
+          const dbOrderId = await upsertPendingOrder({
+            customer_name: customer.name,
+            phone: customer.phone,
+            delivery_address: customer.address,
+            items: items.map((i) => ({ name: i.name, price: i.price, qty: i.qty })),
+            total_price: safeTotal,
+          });
+          supabaseOrderIdRef.current = dbOrderId;
+
+          // ── 2. Create PayPal order with delivery address pre-filled ───────
           return actions.order.create({
             intent: "CAPTURE",
             purchase_units: [
               {
-                // Value must be a string with exactly 2 decimal places
                 amount: {
                   currency_code: "EUR",
                   value: safeTotal.toFixed(2),
                 },
-                description: `My Pizza - ${items.length} Artikel`,
+                description: `My Pizza – ${items.length} Artikel`,
+                // Pre-fill the shipping address so PayPal skips address forms
+                shipping: {
+                  name: { full_name: customer.name },
+                  address: {
+                    address_line_1: customer.address.street,
+                    admin_area_2: customer.address.city,
+                    postal_code: customer.address.plz,
+                    country_code: "DE",
+                  },
+                },
+                // Embed our DB order ID so it's in the PayPal transaction log
+                custom_id: dbOrderId,
               },
             ],
-            // Forces PayPal popup to use the payer's saved address & profile
-            // instead of prompting for billing/shipping info — reduces friction
             application_context: {
-              shipping_preference: "NO_SHIPPING",
+              // Use the address we already provided — skip PayPal's address form
+              shipping_preference: "SET_PROVIDED_ADDRESS",
+              // Jump straight to the pay confirmation, no review page
               user_action: "PAY_NOW",
               brand_name: "My Pizza",
               locale: "de-DE",
@@ -81,33 +107,31 @@ export function PayPalButton() {
         onApprove={async (_data, actions) => {
           try {
             const details = await actions.order!.capture();
-            const orderID = details.id!;
-            const payerID = details.payer?.payer_id ?? "unknown";
+            const paypalOrderId = details.id!;
+            const payerId = details.payer?.payer_id ?? "unknown";
 
-            console.log("Payment captured:", { orderID, payerID });
+            console.log("Payment captured:", { paypalOrderId, payerId });
 
-            // Save to Supabase
-            await saveOrder({
-              items: items.map((i) => ({ name: i.name, price: i.price, qty: i.qty })),
-              total: safeTotal,
-              order_id: orderID,
-              payer_id: payerID,
-              created_at: new Date().toISOString(),
-            });
+            // ── 3. Flip order status to paid in Supabase ──────────────────
+            if (supabaseOrderIdRef.current) {
+              await markOrderPaid(supabaseOrderIdRef.current, paypalOrderId, payerId);
+            }
 
-            // Generate and open PDF receipt
-            generateReceipt({ orderID, items, total: safeTotal });
+            // ── 4. Generate PDF receipt ───────────────────────────────────
+            generateReceipt({ orderID: paypalOrderId, items, total: safeTotal });
 
             setStatus("success");
             clearCart();
           } catch (err) {
-            console.error("Payment processing error:", err);
+            console.error("onApprove error:", err);
             if (isNetworkError(err)) {
               setStatus("error");
-              setMessage("Verbindung unterbrochen. Ihre Zahlung wurde möglicherweise verarbeitet. Bitte kontaktieren Sie uns unter 01771313310.");
+              setMessage(
+                "Verbindung unterbrochen. Ihre Zahlung wurde möglicherweise verarbeitet. Bitte kontaktieren Sie uns: 01771313310."
+              );
             } else {
               setStatus("error");
-              setMessage("Fehler bei der Zahlungsverarbeitung. Bitte kontaktieren Sie uns unter 01771313310.");
+              setMessage("Fehler bei der Zahlungsverarbeitung. Bitte kontaktieren Sie uns: 01771313310.");
             }
           }
         }}
@@ -121,7 +145,7 @@ export function PayPalButton() {
             setMessage("Verbindung unterbrochen. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut.");
           } else {
             setStatus("error");
-            setMessage("Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsmethode.");
+            setMessage("Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.");
           }
         }}
       />
