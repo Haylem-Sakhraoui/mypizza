@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { MapPin, Phone, User } from "lucide-react";
 import type { CustomerInfo } from "../lib/supabase";
@@ -27,6 +27,11 @@ function loadSaved(): Partial<FormValues> {
 }
 
 export function DeliveryForm({ onValid }: DeliveryFormProps) {
+  // Keep onValid in a ref so it is never a useEffect dependency.
+  // This breaks the parent-rerender → new callback → infinite-loop cycle.
+  const onValidRef = useRef(onValid);
+  useEffect(() => { onValidRef.current = onValid; });
+
   const {
     register,
     watch,
@@ -36,28 +41,40 @@ export function DeliveryForm({ onValid }: DeliveryFormProps) {
     defaultValues: loadSaved(),
   });
 
-  const values = watch();
+  // Watch individual fields → each is a primitive string.
+  // A new object from watch() would change identity every render and
+  // re-trigger effects even when the actual values haven't changed.
+  const name   = watch("name")   ?? "";
+  const phone  = watch("phone")  ?? "";
+  const street = watch("street") ?? "";
+  const plz    = watch("plz")    ?? "";
+  const city   = watch("city")   ?? "";
 
-  // Persist every keystroke to localStorage
+  // Effect 1 — localStorage persistence only. No parent callback here.
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, phone, street, plz, city }));
     } catch {
       // ignore private-mode quota errors
     }
+  }, [name, phone, street, plz, city]);
 
+  // Effect 2 — notify parent. Fires only when isValid or a field value
+  // actually changes (primitive comparison → no spurious re-runs).
+  useEffect(() => {
     if (isValid) {
-      onValid({
-        name: values.name.trim(),
-        phone: values.phone.trim(),
+      onValidRef.current({
+        name: name.trim(),
+        phone: phone.trim(),
         address: {
-          street: values.street.trim(),
-          plz: values.plz.trim(),
-          city: values.city.trim(),
+          street: street.trim(),
+          plz: plz.trim(),
+          city: city.trim(),
         },
       });
     }
-  }, [values, isValid, onValid]);
+    // onValidRef is intentionally excluded — it's a stable ref, not a value.
+  }, [isValid, name, phone, street, plz, city]);
 
   const fieldClass = (hasError: boolean) =>
     `w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-colors ${
