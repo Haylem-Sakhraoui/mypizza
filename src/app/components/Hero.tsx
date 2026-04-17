@@ -9,10 +9,17 @@ export function Hero() {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0">
+        {/* Mobile image */}
+        <img
+          src="/logomobile.png"
+          alt="My Pizza hero background"
+          className="w-full h-full object-cover object-center scale-105 block md:hidden"
+        />
+        {/* Desktop image */}
         <img
           src="/logover.png"
           alt="My Pizza hero background"
-          className="w-full h-full object-cover object-center scale-105"
+          className="w-full h-full object-cover object-center scale-105 hidden md:block"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/75" />
       </div>
@@ -29,7 +36,7 @@ export function Hero() {
           className="text-white mb-3"
           style={{ fontSize: "clamp(1.3rem, 3vw, 2rem)", fontWeight: 600, opacity: 0.95 }}
         >
-          Frisch, schnell &amp; lecker
+          Frisch, schnell & lecker
         </p>
         <p className="text-gray-300 mb-2 text-base font-medium">
           Jetzt bestellen und zu Hause genießen
