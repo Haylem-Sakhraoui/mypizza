@@ -10,6 +10,7 @@ interface ProductCardProps {
   price: string;
   badge?: string;
   extras?: string[];
+  allergene?: string | null;
 }
 
 const defaultExtras = [
@@ -27,6 +28,7 @@ export function ProductCard({
   price,
   badge,
   extras,
+  allergene,
 }: ProductCardProps) {
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [selected, setSelected] = useState<string[]>([]);
@@ -74,9 +76,15 @@ export function ProductCard({
         <h3 className="text-gray-900" style={{ fontWeight: 700, fontSize: "1rem" }}>
           {title}
         </h3>
-        <p className="text-gray-500 mt-1 flex-1" style={{ fontSize: "0.8rem", lineHeight: 1.4 }}>
+        <p className="text-gray-500 mt-1" style={{ fontSize: "0.8rem", lineHeight: 1.4 }}>
           {description}
         </p>
+        {allergene && (
+          <p className="mt-1.5 text-xs text-gray-400" style={{ lineHeight: 1.4 }}>
+            <span className="font-semibold text-gray-500">Allergene: </span>
+            {allergene}
+          </p>
+        )}
 
         {/* Customize toggle */}
         <button

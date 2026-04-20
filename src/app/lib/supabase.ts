@@ -25,7 +25,7 @@ export interface OrderItem {
   qty: number;
 }
 
-// ─── Pre-payment: insert a pending order, return its UUID ─────────────────────
+// ─── Pre-payment: insert a pending order + its items, return the order UUID ───
 
 export async function upsertPendingOrder(payload: {
   customer_name: string;
@@ -34,6 +34,7 @@ export async function upsertPendingOrder(payload: {
   items: OrderItem[];
   total_price: number;
 }): Promise<string> {
+  // 1. Insert the order header
   const { data, error } = await supabase
     .from("orders")
     .insert([
@@ -41,7 +42,6 @@ export async function upsertPendingOrder(payload: {
         customer_name: payload.customer_name,
         phone: payload.phone,
         delivery_address: payload.delivery_address,
-        items: payload.items,
         total_price: payload.total_price,
         status: "pending",
         created_at: new Date().toISOString(),
@@ -55,7 +55,24 @@ export async function upsertPendingOrder(payload: {
     throw error;
   }
 
-  return data.id as string;
+  const orderId = data.id as string;
+
+  // 2. Insert normalized order_items rows
+  const itemRows = payload.items.map((item) => ({
+    order_id: orderId,
+    product_name: item.name,
+    unit_price: item.price,
+    quantity: item.qty,
+  }));
+
+  const { error: itemsError } = await supabase.from("order_items").insert(itemRows);
+
+  if (itemsError) {
+    console.error("Supabase order_items insert error:", itemsError);
+    throw itemsError;
+  }
+
+  return orderId;
 }
 
 // ─── Post-payment: flip status to paid, store PayPal IDs ─────────────────────

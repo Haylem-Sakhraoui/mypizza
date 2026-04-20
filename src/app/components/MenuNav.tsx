@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 const categories = [
   { label: "🍕 Pizza", id: "pizza" },
   { label: "🌯 French Tacos", id: "french-tacos" },
-  { label: "🍕 Unsere Pizzen", id: "unsere-pizzen" },
   { label: "🍟 Snacks", id: "snacks" },
   { label: "👶 Kinder Menü", id: "kinder-menu" },
   { label: "🍔 Burger", id: "burger" },
