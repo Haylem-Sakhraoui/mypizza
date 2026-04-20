@@ -24,6 +24,8 @@ createRoot(document.getElementById("root")!).render(
       clientId: paypalClientId ?? "test",
       currency: "EUR",
       intent: "capture",
+      components: "buttons",
+      disableFunding: "credit,card,venmo,paylater",
     }}
   >
     <CartProvider>

@@ -11,20 +11,20 @@ import { SaucesSection } from "./components/SaucesSection";
 import { BuildYourPizza } from "./components/BuildYourPizza";
 import { LocationContact } from "./components/LocationContact";
 import { Footer } from "./components/Footer";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 export default function App() {
   return (
-    
     <div className="min-h-screen bg-gray-50">
       <Navbar />
       <Hero />
       <MenuNav />
-      <FrenchTacosSection />
-      <PizzaSection />
+      <ErrorBoundary><FrenchTacosSection /></ErrorBoundary>
+      <ErrorBoundary><PizzaSection /></ErrorBoundary>
       <SpecialOffers />
-      <SnacksSection />
+      <ErrorBoundary><SnacksSection /></ErrorBoundary>
       <KinderMenuSection />
-      <BurgersSection />
+      <ErrorBoundary><BurgersSection /></ErrorBoundary>
       <SaucesSection />
       <BuildYourPizza />
       <LocationContact />

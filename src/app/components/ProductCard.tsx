@@ -149,13 +149,12 @@ export function ProductCard({
               <Plus size={12} className="text-gray-600" />
             </button>
           </div>
-          <a href="tel:01771313310" className="flex-1">
-            <button
-              className="w-full py-2 rounded-full text-white text-sm font-bold hover:opacity-90 hover:scale-105 transition-all duration-200"
-              style={{ backgroundColor: "#ec6408" }}
-            >
-              Anrufen
-            </button>
+          <a
+            href="tel:01771313310"
+            className="flex-1 py-2 rounded-full text-white text-sm font-bold hover:opacity-90 hover:scale-105 transition-all duration-200 flex items-center justify-center"
+            style={{ backgroundColor: "#ec6408" }}
+          >
+            Anrufen
           </a>
           <button
             className={`flex-1 py-2 rounded-full text-white text-sm font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${

@@ -15,17 +15,20 @@ function isNetworkError(err: unknown): boolean {
 
 interface PayPalButtonProps {
   customer: CustomerInfo;
+  discountedTotal: number;
+  promoCode: string | null;
+  discountAmount: number;
 }
 
-export function PayPalButton({ customer }: PayPalButtonProps) {
-  const { items, total, clearCart } = useCart();
+export function PayPalButton({ customer, discountedTotal, promoCode, discountAmount }: PayPalButtonProps) {
+  const { items, clearCart } = useCart();
   const [status, setStatus] = useState<"idle" | "processing" | "success" | "error" | "cancelled">("idle");
   const [message, setMessage] = useState("");
 
   // Hold the Supabase order UUID between createOrder → onApprove
   const supabaseOrderIdRef = useRef<string | null>(null);
 
-  const safeTotal = Math.max(0.01, total);
+  const safeTotal = Math.max(0.01, discountedTotal);
 
   if (items.length === 0) return null;
 
@@ -67,6 +70,8 @@ export function PayPalButton({ customer }: PayPalButtonProps) {
             delivery_address: customer.address,
             items: items.map((i) => ({ name: i.name, price: i.price, qty: i.qty })),
             total_price: safeTotal,
+            promo_code: promoCode ?? undefined,
+            discount_amount: discountAmount,
           });
           supabaseOrderIdRef.current = dbOrderId;
 

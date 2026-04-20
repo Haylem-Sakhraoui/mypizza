@@ -33,6 +33,8 @@ export async function upsertPendingOrder(payload: {
   delivery_address: DeliveryAddress;
   items: OrderItem[];
   total_price: number;
+  promo_code?: string;
+  discount_amount?: number;
 }): Promise<string> {
   // 1. Insert the order header
   const { data, error } = await supabase
@@ -43,6 +45,8 @@ export async function upsertPendingOrder(payload: {
         phone: payload.phone,
         delivery_address: payload.delivery_address,
         total_price: payload.total_price,
+        promo_code: payload.promo_code ?? null,
+        discount_amount: payload.discount_amount ?? 0,
         status: "pending",
         created_at: new Date().toISOString(),
       },

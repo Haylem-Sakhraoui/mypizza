@@ -2,6 +2,7 @@ import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { PayPalButton } from "./PayPalButton";
 import { DeliveryForm } from "./DeliveryForm";
+import { PromoCodeInput, type AppliedPromo } from "./PromoCodeInput";
 import { useState, useCallback } from "react";
 import type { CustomerInfo } from "../lib/supabase";
 
@@ -15,6 +16,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   // null = form not yet valid; CustomerInfo = form valid and ready to pay
   const [customer, setCustomer] = useState<CustomerInfo | null>(null);
   const handleValid = useCallback((info: CustomerInfo) => setCustomer(info), []);
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+
+  const discountedTotal = appliedPromo
+    ? Math.max(0.01, total - appliedPromo.discountAmount)
+    : total;
 
   return (
     <>
@@ -116,19 +122,39 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
             )}
           </div>
 
-          {/* Footer: Total + Delivery Form + PayPal */}
+          {/* Footer: Total + Promo + Delivery Form + PayPal */}
           {items.length > 0 && (
             <div className="border-t border-gray-100 p-4 space-y-4 overflow-y-auto max-h-[60vh]">
               {/* Order total */}
-              <div className="flex items-center justify-between">
-                <span className="text-base font-bold text-gray-900">Gesamtbetrag</span>
-                <span
-                  className="text-xl font-bold"
-                  style={{ color: "#ec6408" }}
-                >
-                  {total.toFixed(2).replace(".", ",")} €
-                </span>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-500">Zwischensumme</span>
+                  <span className="text-sm text-gray-700">
+                    {total.toFixed(2).replace(".", ",")} €
+                  </span>
+                </div>
+                {appliedPromo && (
+                  <div className="flex items-center justify-between text-green-600">
+                    <span className="text-sm">{appliedPromo.label}</span>
+                    <span className="text-sm font-semibold">
+                      − {appliedPromo.discountAmount.toFixed(2).replace(".", ",")} €
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between border-t border-gray-100 pt-1.5">
+                  <span className="text-base font-bold text-gray-900">Gesamtbetrag</span>
+                  <span className="text-xl font-bold" style={{ color: "#ec6408" }}>
+                    {discountedTotal.toFixed(2).replace(".", ",")} €
+                  </span>
+                </div>
               </div>
+
+              {/* Promo code */}
+              <PromoCodeInput
+                cartTotal={total}
+                onApply={setAppliedPromo}
+                applied={appliedPromo}
+              />
 
               {/* Step 1: Delivery form — always visible when there are items */}
               <DeliveryForm onValid={handleValid} />
@@ -136,7 +162,12 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
               {/* Step 2: PayPal buttons — only appear once form is valid */}
               {customer && (
                 <div className="pt-1">
-                  <PayPalButton customer={customer} />
+                  <PayPalButton
+                    customer={customer}
+                    discountedTotal={discountedTotal}
+                    promoCode={appliedPromo?.code ?? null}
+                    discountAmount={appliedPromo?.discountAmount ?? 0}
+                  />
                 </div>
               )}
 
