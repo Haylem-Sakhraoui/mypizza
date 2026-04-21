@@ -50,7 +50,7 @@ const kinderMenu: KinderMenuItem[] = [
     image:
       "/nuggets menu.png",
     title: "Nuggets Menü",
-    tagline: "6 goldene Nuggets — der Kinderklassiker",
+    tagline: "5 goldene Nuggets — der Kinderklassiker",
     price: "9,99 €",
     includes: [
       { icon: "🍘", label: "6 Chicken Nuggets" },
