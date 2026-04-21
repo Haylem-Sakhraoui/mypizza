@@ -20,13 +20,13 @@ const kinderMenu: KinderMenuItem[] = [
     image: "/tacos menu.png",
     title: "Tacos Menü",
     tagline: "Mini French Tacos für kleine Helden",
-    price: "12,00 €",
+    price: "9,99 €",
     badge: "Kids Fav ⭐",
     includes: [
       { icon: "🌯", label: "Mini French Tacos" },
       { icon: "🍟", label: "Kleine Pommes frites" },
       { icon: "🧃", label: "Caprisonne" },
-      { icon: "🍮", label: "Tiramisu" },
+      { icon: "🍮", label: "Chocofun Cup" },
     ],
   },
   {
@@ -35,13 +35,13 @@ const kinderMenu: KinderMenuItem[] = [
     image: "/wings menu.png",
     title: "Wings Menü",
     tagline: "4 knusprige Wings — unwiderstehlich lecker",
-    price: "12,00 €",
+    price: "9,99 €",
     badge: "🔥 Crispy",
     includes: [
       { icon: "🍗", label: "4 Chicken Wings" },
       { icon: "🍟", label: "Kleine Pommes frites" },
       { icon: "🧃", label: "Caprisonne" },
-      { icon: "🍮", label: "Tiramisu" },
+      { icon: "🍮", label: "Chocofun Cup" },
     ],
   },
   {
@@ -51,12 +51,12 @@ const kinderMenu: KinderMenuItem[] = [
       "/nuggets menu.png",
     title: "Nuggets Menü",
     tagline: "6 goldene Nuggets — der Kinderklassiker",
-    price: "12,00 €",
+    price: "9,99 €",
     includes: [
       { icon: "🍘", label: "6 Chicken Nuggets" },
       { icon: "🍟", label: "Kleine Pommes frites" },
       { icon: "🧃", label: "Caprisonne" },
-      { icon: "🍮", label: "Tiramisu" },
+      { icon: "🍮", label: "Chocofun Cup" },
     ],
   },
   {
@@ -66,12 +66,12 @@ const kinderMenu: KinderMenuItem[] = [
       "/cheeseburger .png",
     title: "Cheeseburger Menü",
     tagline: "CheeseBurger Menü für kleine Burgerfans",
-    price: "12,00 €",
+    price: "9,99 €",
     includes: [
       { icon: "�", label: "CheeseBurger" },
       { icon: "🍟", label: "Kleine Pommes frites" },
       { icon: "🧃", label: "Caprisonne" },
-      { icon: "🍮", label: "Tiramisu" },
+      { icon: "🍮", label: "Chocofun Cup" },
     ],
   },
 ];
