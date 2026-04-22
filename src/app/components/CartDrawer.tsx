@@ -1,10 +1,11 @@
-import { X, Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
+import { X, Minus, Plus, Trash2, ShoppingBag, Clock } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { PayPalButton } from "./PayPalButton";
 import { DeliveryForm } from "./DeliveryForm";
 import { PromoCodeInput, type AppliedPromo } from "./PromoCodeInput";
 import { useState, useCallback } from "react";
 import type { CustomerInfo } from "../lib/supabase";
+import { useStoreStatus } from "../lib/useBusinessHours";
 
 interface CartDrawerProps {
   open: boolean;
@@ -13,6 +14,7 @@ interface CartDrawerProps {
 
 export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const { items, removeItem, updateQty, total, clearCart } = useCart();
+  const { open: isOpen, reason } = useStoreStatus();
   // null = form not yet valid; CustomerInfo = form valid and ready to pay
   const [customer, setCustomer] = useState<CustomerInfo | null>(null);
   const handleValid = useCallback((info: CustomerInfo) => setCustomer(info), []);
@@ -156,26 +158,43 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                 applied={appliedPromo}
               />
 
-              {/* Step 1: Delivery form — always visible when there are items */}
-              <DeliveryForm onValid={handleValid} />
-
-              {/* Step 2: PayPal buttons — only appear once form is valid */}
-              {customer && (
-                <div className="pt-1">
-                  <PayPalButton
-                    customer={customer}
-                    discountedTotal={discountedTotal}
-                    promoCode={appliedPromo?.code ?? null}
-                    discountAmount={appliedPromo?.discountAmount ?? 0}
-                  />
+              {/* Closed notice — replaces checkout flow outside business hours */}
+              {!isOpen ? (
+                <div className="flex items-start gap-3 rounded-xl p-4" style={{ backgroundColor: "#1a1a1a" }}>
+                  <Clock size={16} className="mt-0.5 shrink-0" style={{ color: "#ec6408" }} />
+                  <div>
+                    <p className="text-sm font-semibold" style={{ color: "#f3f4f6" }}>
+                      Wir haben momentan geschlossen
+                    </p>
+                    <p className="text-xs mt-0.5" style={{ color: "#9ca3af" }}>
+                      {reason ?? "Bestellungen nehmen wir ab 18:00 Uhr entgegen."} Ihr Warenkorb bleibt gespeichert.
+                    </p>
+                  </div>
                 </div>
-              )}
+              ) : (
+                <>
+                  {/* Step 1: Delivery form — always visible when there are items */}
+                  <DeliveryForm onValid={handleValid} />
 
-              {/* Hint shown before form is complete */}
-              {!customer && (
-                <p className="text-center text-xs text-gray-400">
-                  Bitte füllen Sie die Lieferadresse aus, um fortzufahren.
-                </p>
+                  {/* Step 2: PayPal buttons — only appear once form is valid */}
+                  {customer && (
+                    <div className="pt-1">
+                      <PayPalButton
+                        customer={customer}
+                        discountedTotal={discountedTotal}
+                        promoCode={appliedPromo?.code ?? null}
+                        discountAmount={appliedPromo?.discountAmount ?? 0}
+                      />
+                    </div>
+                  )}
+
+                  {/* Hint shown before form is complete */}
+                  {!customer && (
+                    <p className="text-center text-xs text-gray-400">
+                      Bitte füllen Sie die Lieferadresse aus, um fortzufahren.
+                    </p>
+                  )}
+                </>
               )}
             </div>
           )}

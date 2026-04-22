@@ -2,6 +2,7 @@ import { PayPalButtons } from "@paypal/react-paypal-js";
 import { useCart } from "../context/CartContext";
 import { upsertPendingOrder, markOrderPaid, type CustomerInfo } from "../lib/supabase";
 import { generateReceipt } from "../lib/receipt";
+import { fetchStoreSettings } from "../lib/useBusinessHours";
 import { useState, useRef } from "react";
 
 function isNetworkError(err: unknown): boolean {
@@ -58,6 +59,22 @@ export function PayPalButton({ customer, discountedTotal, promoCode, discountAmo
             setStatus("error");
             setMessage("Verbindung unterbrochen. Bitte prüfen Sie Ihre Internetverbindung.");
             throw new Error("offline");
+          }
+
+          // ── 0. Server-side guard: re-fetch store status before any charge ──
+          const settings = await fetchStoreSettings();
+          const isOpen =
+            !settings ||
+            settings.mode === "force_open" ||
+            (settings.mode === "automatic" &&
+              (() => { const h = new Date().getHours(); return h >= 18 || h < 4; })());
+          if (!isOpen) {
+            const msg =
+              settings?.reason?.trim() ||
+              "Wir haben momentan geschlossen. Bestellungen ab 18:00 Uhr.";
+            setStatus("error");
+            setMessage(msg);
+            throw new Error("store_closed");
           }
 
           setStatus("processing");

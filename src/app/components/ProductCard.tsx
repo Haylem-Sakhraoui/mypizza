@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Plus, Minus, Check, ChevronDown, ShoppingCart } from "lucide-react";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { useCart } from "../context/CartContext";
+import { useStoreStatus } from "../lib/useBusinessHours";
+import { StoreGate } from "./StoreGate";
 
 interface ProductCardProps {
   image: string;
@@ -35,6 +37,7 @@ export function ProductCard({
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const { addItem } = useCart();
+  const { open: isOpen, reason } = useStoreStatus();
 
   const toggle = (item: string) => {
     setSelected((prev) =>
@@ -133,7 +136,8 @@ export function ProductCard({
         )}
 
         {/* Qty + Add */}
-        <div className="mt-4 flex items-center gap-2">
+        <StoreGate open={isOpen} reason={reason}>
+          <div className="mt-4 flex items-center gap-2">
           <div className="flex items-center gap-1 bg-gray-100 rounded-full px-2 py-1">
             <button
               onClick={() => setQty((q) => Math.max(1, q - 1))}
@@ -157,11 +161,18 @@ export function ProductCard({
             Anrufen
           </a>
           <button
+            disabled={!isOpen}
+            title={!isOpen ? "Bestellungen ab 18:00 Uhr" : undefined}
             className={`flex-1 py-2 rounded-full text-white text-sm font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${
-              added ? "bg-green-500" : "hover:opacity-90 hover:scale-105"
+              !isOpen
+                ? "bg-gray-300 cursor-not-allowed opacity-60"
+                : added
+                ? "bg-green-500"
+                : "hover:opacity-90 hover:scale-105"
             }`}
-            style={!added ? { backgroundColor: "#ec6408" } : {}}
+            style={!isOpen || added ? {} : { backgroundColor: "#ec6408" }}
             onClick={() => {
+              if (!isOpen) return;
               // Parse price: "9,00€" → 9.00
               const numericPrice = parseFloat(
                 price.replace("€", "").replace(",", ".")
@@ -187,7 +198,8 @@ export function ProductCard({
               </>
             )}
           </button>
-        </div>
+          </div>
+        </StoreGate>
       </div>
     </div>
   );
