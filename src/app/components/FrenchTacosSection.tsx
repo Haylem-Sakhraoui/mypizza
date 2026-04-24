@@ -80,6 +80,9 @@ export function FrenchTacosSection() {
                   badge={taco.badge ?? undefined}
                   extras={TACOS_EXTRAS}
                   allergene={taco.allergene}
+                  productId={taco.id}
+                  hasSizes={taco.has_sizes}
+                  sizes={taco.sizes}
                 />
               ))}
         </div>

@@ -58,6 +58,9 @@ export function PizzaSection() {
                   badge={pizza.badge ?? undefined}
                   extras={PIZZA_EXTRAS}
                   allergene={pizza.allergene}
+                  productId={pizza.id}
+                  hasSizes={pizza.has_sizes}
+                  sizes={pizza.sizes}
                 />
               ))}
         </div>

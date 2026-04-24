@@ -63,6 +63,9 @@ export function SnacksSection() {
                   badge={snack.badge ?? undefined}
                   extras={SNACKS_EXTRAS}
                   allergene={snack.allergene}
+                  productId={snack.id}
+                  hasSizes={snack.has_sizes}
+                  sizes={snack.sizes}
                 />
               ))}
         </div>

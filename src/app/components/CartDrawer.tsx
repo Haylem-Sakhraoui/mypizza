@@ -83,6 +83,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     <p className="font-semibold text-gray-900 text-sm truncate">
                       {item.name}
                     </p>
+                    {item.sizeLabel && (
+                      <p className="text-xs font-medium mt-0.5" style={{ color: "#ec6408" }}>
+                        {item.sizeLabel}
+                      </p>
+                    )}
                     <p className="text-xs text-gray-500 mt-0.5">
                       {item.price.toFixed(2).replace(".", ",")} € pro Stück
                     </p>

@@ -57,6 +57,9 @@ export function BurgersSection() {
                   badge={burger.badge ?? undefined}
                   extras={BURGER_EXTRAS}
                   allergene={burger.allergene}
+                  productId={burger.id}
+                  hasSizes={burger.has_sizes}
+                  sizes={burger.sizes}
                 />
               ))}
         </div>

@@ -1,11 +1,19 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./supabase";
 
+export interface ProductSize {
+  id: string;
+  label: string;
+  price: number;
+}
+
 export interface Product {
   id: string;
   name: string;
   description: string | null;
   base_price: number | null;
+  has_sizes: boolean;
+  sizes: ProductSize[];
   image_url: string | null;
   badge: string | null;
   allergene: string | null;
@@ -51,10 +59,10 @@ export function useProducts(categorySlug: string) {
         return;
       }
 
-      // 2. Fetch products filtered by category_id
+      // 2. Fetch products with their sizes
       const { data, error: prodErr } = await supabase
         .from("products")
-        .select("id, name, description, base_price, image_url, badge, allergene")
+        .select("id, name, description, base_price, has_sizes, image_url, badge, allergene, product_sizes(id, label, price)")
         .eq("category_id", cat.id)
         .eq("is_available", true)
         .order("name");
@@ -63,7 +71,15 @@ export function useProducts(categorySlug: string) {
       if (prodErr) {
         setError(prodErr.message);
       } else {
-        setProducts((data ?? []) as Product[]);
+        const mapped = (data ?? []).map((p: any) => ({
+          ...p,
+          sizes: (p.product_sizes ?? []).map((s: any) => ({
+            id: s.id,
+            label: s.label,
+            price: Number(s.price),
+          })),
+        })) as Product[];
+        setProducts(mapped);
       }
       setLoading(false);
     }

@@ -60,7 +60,6 @@ export function useStoreStatus(): StoreStatus {
     reason: isOpenByTime() ? null : "Wir haben momentan geschlossen. Bestellungen ab 18:00 Uhr.",
     settings: null,
   }));
-
   useEffect(() => {
     let cancelled = false;
 

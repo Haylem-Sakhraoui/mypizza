@@ -117,6 +117,9 @@ export function Navbar() {
               { label: "🍔 Burger", id: "burger" },
               { label: "🎁 Angebote", id: "offers" },
               { label: "📍 Kontakt", id: "contact" },
+              { label: "🥤 Getränke", id: "getraenke" },
+              { label: "🍦 Nachtisch", id: "nachtisch" }, 
+
             ].map((item) => (
               <button
                 key={item.id}

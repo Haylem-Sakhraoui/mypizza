@@ -1,10 +1,11 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 
 export interface CartItem {
-  id: string;
+  id: string;       // encodes productId + sizeLabel for uniqueness
   name: string;
   price: number;
   qty: number;
+  sizeLabel?: string;
 }
 
 interface CartContextType {
@@ -32,6 +33,7 @@ function loadCartFromStorage(): CartItem[] {
         typeof i.name === "string" &&
         typeof i.price === "number" &&
         typeof i.qty === "number"
+      // sizeLabel is optional — no strict check needed
     );
   } catch {
     return [];

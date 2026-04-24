@@ -6,6 +6,8 @@ const categories = [
   { label: "🍟 Snacks", id: "snacks" },
   { label: "👶 Kinder Menü", id: "kinder-menu" },
   { label: "🍔 Burger", id: "burger" },
+  { label: "🥤 Getränke", id: "getraenke" },
+  { label: "🍦 Nachtisch", id: "nachtisch" },
 ];
 
 export function MenuNav() {

@@ -7,6 +7,8 @@ import { PizzaSection } from "./components/PizzaSection";
 import { SnacksSection } from "./components/SnacksSection";
 import { KinderMenuSection } from "./components/KinderMenuSection";
 import { BurgersSection } from "./components/BurgersSection";
+import { GetraenkeSection } from "./components/GetraenkeSection";
+import { NachtischSection } from "./components/NachtischSection";
 import { SpecialOffers } from "./components/SpecialOffers";
 import { SaucesSection } from "./components/SaucesSection";
 import { BuildYourPizza } from "./components/BuildYourPizza";
@@ -30,6 +32,8 @@ export default function App() {
       <ErrorBoundary><SnacksSection /></ErrorBoundary>
       <KinderMenuSection />
       <ErrorBoundary><BurgersSection /></ErrorBoundary>
+      <ErrorBoundary><GetraenkeSection /></ErrorBoundary>
+      <ErrorBoundary><NachtischSection /></ErrorBoundary>
       <SaucesSection />
       <BuildYourPizza />
       <LocationContact />
