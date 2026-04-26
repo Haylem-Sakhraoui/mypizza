@@ -4,3 +4,6 @@ CREATE POLICY "public_read_categories" ON public.categories
 
 CREATE POLICY "public_read_products" ON public.products
   FOR SELECT TO anon USING (true);
+
+CREATE POLICY "public_read_product_sizes" ON public.product_sizes
+  FOR SELECT TO anon USING (true);

@@ -23,6 +23,7 @@ export interface OrderItem {
   name: string;
   price: number;
   qty: number;
+  sizeLabel?: string;
 }
 
 // ─── Pre-payment: insert a pending order + its items, return the order UUID ───
@@ -65,6 +66,7 @@ export async function upsertPendingOrder(payload: {
   const itemRows = payload.items.map((item) => ({
     order_id: orderId,
     product_name: item.name,
+    size_label: item.sizeLabel ?? null,
     unit_price: item.price,
     quantity: item.qty,
   }));
