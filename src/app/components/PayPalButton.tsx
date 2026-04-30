@@ -164,7 +164,7 @@ export function PayPalButton({ customer, discountedTotal, promoCode, discountAmo
             // ── Step B: Show success immediately — do NOT block on DB ────────────
             setStatus("idle");
             clearCart();
-            toast.custom(() => <OrderSuccessToast />, { duration: 7000 });
+            toast.custom(() => <OrderSuccessToast method="paypal" />, { duration: 7000 });
 
             // ── Step C: Persist paid status to DB (non-fatal) ────────────────────
             if (supabaseOrderIdRef.current) {

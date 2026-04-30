@@ -13,7 +13,14 @@ interface OfflineOrderButtonProps {
   discountAmount: number;
 }
 
-function OrderSuccessToast() {
+function OrderSuccessToast({ method }: { method: "cash" | "ec" | "paypal" }) {
+  const paymentLine =
+    method === "ec"
+      ? "💳 Zahlung per EC-Karte bei Lieferung"
+      : method === "cash"
+      ? "💵 Zahlung bar bei Lieferung"
+      : "✅ Zahlung per PayPal erhalten";
+
   return (
     <div
       style={{
@@ -39,10 +46,20 @@ function OrderSuccessToast() {
       <p
         style={{
           fontSize: "12px",
+          fontWeight: 600,
+          color: "#6b7280",
+          marginTop: "10px",
+          marginBottom: "2px",
+        }}
+      >
+        {paymentLine}
+      </p>
+      <p
+        style={{
+          fontSize: "12px",
           fontWeight: 700,
           color: "#ec6408",
-          marginTop: "10px",
-          marginBottom: 0,
+          margin: 0,
         }}
       >
         My Pizza – Wir lieben es, für Sie zu kochen! ❤️
@@ -113,7 +130,7 @@ export function OfflineOrderButton({
       });
 
       clearCart();
-      toast.custom(() => <OrderSuccessToast />, { duration: 7000 });
+      toast.custom(() => <OrderSuccessToast method={method} />, { duration: 7000 });
     } catch (err) {
       console.error("[OfflineOrder] Error:", err);
       setStatus("error");
