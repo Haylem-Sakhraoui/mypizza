@@ -1,9 +1,10 @@
 import { PayPalButtons } from "@paypal/react-paypal-js";
+import { toast } from "sonner";
 import { useCart } from "../context/CartContext";
 import { upsertPendingOrder, markOrderPaid, type CustomerInfo } from "../lib/supabase";
-import { generateReceipt } from "../lib/receipt";
 import { fetchStoreSettings } from "../lib/useBusinessHours";
 import { useState, useRef } from "react";
+import { OrderSuccessToast } from "./CashOrderButton";
 
 function isNetworkError(err: unknown): boolean {
   if (err instanceof ProgressEvent) return true;
@@ -23,9 +24,8 @@ interface PayPalButtonProps {
 
 export function PayPalButton({ customer, discountedTotal, promoCode, discountAmount }: PayPalButtonProps) {
   const { items, clearCart } = useCart();
-  const [status, setStatus] = useState<"idle" | "processing" | "success" | "error" | "cancelled">("idle");
+  const [status, setStatus] = useState<"idle" | "processing" | "error" | "cancelled">("idle");
   const [message, setMessage] = useState("");
-  const [orderRef, setOrderRef] = useState<string>("");
 
   // Hold the Supabase order UUID between createOrder → onApprove
   const supabaseOrderIdRef = useRef<string | null>(null);
@@ -38,20 +38,6 @@ export function PayPalButton({ customer, discountedTotal, promoCode, discountAmo
 
   return (
     <div className="space-y-3">
-      {status === "success" && (
-        <div className="bg-green-50 border border-green-200 rounded-xl p-4 space-y-1">
-          <p className="text-green-700 font-bold text-sm">✓ Zahlung erfolgreich bestätigt!</p>
-          <p className="text-green-600 text-sm">
-            Ihre Bestellung wurde aufgenommen. Wir bereiten sie jetzt vor.
-          </p>
-          {orderRef && (
-            <p className="text-green-600 text-xs font-mono mt-1">
-              Bestellnummer: <span className="font-bold">#{orderRef}</span>
-            </p>
-          )}
-          <p className="text-green-500 text-xs mt-1">Ihre Rechnung wird geöffnet…</p>
-        </div>
-      )}
       {status === "error" && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium">
           ✗ {message}
@@ -68,11 +54,10 @@ export function PayPalButton({ customer, discountedTotal, promoCode, discountAmo
         </div>
       )}
 
-      {/* Hide the button once payment is confirmed — prevents any repeat payment attempt */}
-      {status !== "success" && (
+      {/* Hide the PayPal button while processing */}
+      {status !== "processing" && (
         <PayPalButtons
           style={{ layout: "vertical", shape: "rect", label: "pay" }}
-          disabled={status === "processing"}
           createOrder={async (_data, actions) => {
             if (!navigator.onLine) {
               setStatus("error");
@@ -176,11 +161,10 @@ export function PayPalButton({ customer, discountedTotal, promoCode, discountAmo
               captureStatus,
             });
 
-            // ── Step B: Show success immediately — do NOT block on DB or PDF ──────
-            const supabaseId = supabaseOrderIdRef.current ?? paypalOrderId;
-            setOrderRef(supabaseId.slice(0, 8).toUpperCase());
-            setStatus("success");
+            // ── Step B: Show success immediately — do NOT block on DB ────────────
+            setStatus("idle");
             clearCart();
+            toast.custom(() => <OrderSuccessToast />, { duration: 7000 });
 
             // ── Step C: Persist paid status to DB (non-fatal) ────────────────────
             if (supabaseOrderIdRef.current) {
@@ -200,13 +184,6 @@ export function PayPalButton({ customer, discountedTotal, promoCode, discountAmo
                   }
                 );
               }
-            }
-
-            // ── Step D: Generate PDF receipt (non-fatal) ──────────────────────────
-            try {
-              generateReceipt({ orderID: paypalOrderId, items, total: safeTotal });
-            } catch (receiptErr) {
-              console.warn("[PayPal] Receipt generation failed (non-fatal):", receiptErr);
             }
           }}
           onCancel={() => {

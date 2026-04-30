@@ -2,6 +2,7 @@
 import { createRoot } from "react-dom/client";
 import { PayPalScriptProvider } from "@paypal/react-paypal-js";
 import { CartProvider } from "./app/context/CartContext";
+import { Toaster } from "sonner";
 import App from "./app/App.tsx";
 import "./styles/index.css";
 
@@ -30,6 +31,12 @@ createRoot(document.getElementById("root")!).render(
   >
     <CartProvider>
       <App />
+      <Toaster
+        position="top-center"
+        expand
+        visibleToasts={1}
+        toastOptions={{ duration: 7000 }}
+      />
     </CartProvider>
   </PayPalScriptProvider>
 );

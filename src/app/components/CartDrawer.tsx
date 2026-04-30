@@ -1,6 +1,7 @@
-import { X, Minus, Plus, Trash2, ShoppingBag, Clock } from "lucide-react";
+import { X, Minus, Plus, Trash2, ShoppingBag, Clock, Banknote, CreditCard, Smartphone } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { PayPalButton } from "./PayPalButton";
+import { OfflineOrderButton } from "./CashOrderButton";
 import { DeliveryForm } from "./DeliveryForm";
 import { PromoCodeInput, type AppliedPromo } from "./PromoCodeInput";
 import { useState, useCallback } from "react";
@@ -19,6 +20,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const [customer, setCustomer] = useState<CustomerInfo | null>(null);
   const handleValid = useCallback((info: CustomerInfo) => setCustomer(info), []);
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "ec" | "paypal">("cash");
 
   const discountedTotal = appliedPromo
     ? Math.max(0.01, total - appliedPromo.discountAmount)
@@ -181,15 +183,66 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   {/* Step 1: Delivery form — always visible when there are items */}
                   <DeliveryForm onValid={handleValid} />
 
-                  {/* Step 2: PayPal buttons — only appear once form is valid */}
+                  {/* Step 2: Payment method selector — only after form is valid */}
                   {customer && (
-                    <div className="pt-1">
-                      <PayPalButton
-                        customer={customer}
-                        discountedTotal={discountedTotal}
-                        promoCode={appliedPromo?.code ?? null}
-                        discountAmount={appliedPromo?.discountAmount ?? 0}
-                      />
+                    <div className="pt-1 space-y-3">
+                      {/* Payment method toggle */}
+                      <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">
+                        Zahlungsmethode
+                      </p>
+                      <div className="grid grid-cols-3 gap-2">
+                        <button
+                          onClick={() => setPaymentMethod("cash")}
+                          className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl border text-xs font-semibold transition-colors ${
+                            paymentMethod === "cash"
+                              ? "border-orange-400 bg-orange-50 text-orange-700"
+                              : "border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300"
+                          }`}
+                        >
+                          <Banknote size={16} />
+                          Barzahlung
+                        </button>
+                        <button
+                          onClick={() => setPaymentMethod("ec")}
+                          className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl border text-xs font-semibold transition-colors ${
+                            paymentMethod === "ec"
+                              ? "border-orange-400 bg-orange-50 text-orange-700"
+                              : "border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300"
+                          }`}
+                        >
+                          <CreditCard size={16} />
+                          EC-Karte
+                        </button>
+                        <button
+                          onClick={() => setPaymentMethod("paypal")}
+                          className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl border text-xs font-semibold transition-colors ${
+                            paymentMethod === "paypal"
+                              ? "border-blue-400 bg-blue-50 text-blue-700"
+                              : "border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300"
+                          }`}
+                        >
+                          <Smartphone size={16} />
+                          PayPal
+                        </button>
+                      </div>
+
+                      {/* Step 3: Payment action */}
+                      {paymentMethod === "cash" || paymentMethod === "ec" ? (
+                        <OfflineOrderButton
+                          method={paymentMethod}
+                          customer={customer}
+                          discountedTotal={discountedTotal}
+                          promoCode={appliedPromo?.code ?? null}
+                          discountAmount={appliedPromo?.discountAmount ?? 0}
+                        />
+                      ) : (
+                        <PayPalButton
+                          customer={customer}
+                          discountedTotal={discountedTotal}
+                          promoCode={appliedPromo?.code ?? null}
+                          discountAmount={appliedPromo?.discountAmount ?? 0}
+                        />
+                      )}
                     </div>
                   )}
 
