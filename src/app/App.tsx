@@ -26,11 +26,11 @@ export default function App() {
       {!open && <ClosedBanner reason={reason} />}
       <Hero />
       <MenuNav />
+      <KinderMenuSection />
       <ErrorBoundary><FrenchTacosSection /></ErrorBoundary>
       <ErrorBoundary><PizzaSection /></ErrorBoundary>
       <SpecialOffers />
       <ErrorBoundary><SnacksSection /></ErrorBoundary>
-      <KinderMenuSection />
       <ErrorBoundary><BurgersSection /></ErrorBoundary>
       <ErrorBoundary><GetraenkeSection /></ErrorBoundary>
       <ErrorBoundary><NachtischSection /></ErrorBoundary>
