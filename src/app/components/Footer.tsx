@@ -1,4 +1,4 @@
-import { Phone, MapPin, Clock, Instagram, Facebook, Twitter } from "lucide-react";
+import { Phone, MapPin, Clock, Instagram, Facebook, Twitter, Mail } from "lucide-react";
 
 const navLinks = [
   { label: "🍕 Unsere Pizzen", id: "pizza" },
@@ -101,10 +101,17 @@ export function Footer() {
                   01771313310
                 </a>
               </div>
+              // add email contact
+              <div className="flex items-center gap-3">
+                <Mail size={16} style={{ color: "#ec6408" }} className="flex-shrink-0" />
+                <a href="mailto:mypizzaerfurt@gmail.com" className="text-gray-300 text-sm hover:text-white transition-colors font-bold">
+                  mypizzaerfurt@gmail.com
+                </a>
+              </div>
               <div className="flex items-center gap-3">
                 <Clock size={16} style={{ color: "#ec6408" }} className="flex-shrink-0" />
                 <div>
-                  <p className="text-gray-300 text-sm">17:00 – 03:00</p>
+                  <p className="text-gray-300 text-sm">18:00 – 03:30</p>
                   <p className="text-gray-400 text-xs">Täglich</p>
                 </div>
               </div>

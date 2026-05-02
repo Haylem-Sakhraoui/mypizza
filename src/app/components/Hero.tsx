@@ -23,7 +23,7 @@ const heroTextStyles = `
 
 export function Hero() {
   const scrollDown = () => {
-    document.getElementById("menu-nav")?.scrollIntoView({ behavior: "smooth" });
+    document.getElementById("kinder-menu")?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (

@@ -139,7 +139,7 @@ export function LocationContact() {
               loading="lazy"
               className="w-full h-full"
               style={{ filter: "saturate(1.1) contrast(1.05)", minHeight: "320px" }}
-              src="https://www.google.com/maps/embed/v1/place?key=AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY&q=Schmiedstedter+Str+28,+99084+Erfurt"
+              src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_KEY}&q=Schmiedstedter+Str+28,+99084+Erfurt`}
             />
             {/* Fallback overlay for when API key doesn't work */}
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 pointer-events-none opacity-0">

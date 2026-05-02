@@ -60,7 +60,7 @@ export function KinderMenuSection() {
 
         {/* Footer note */}
         <p className="text-center text-xs text-gray-400 mt-8">
-          * Alle Menüs sind speziell für Kinder portioniert. Allergene auf Anfrage.
+          * Alle Menüs sind speziell für Kinder portioniert.
         </p>
       </div>
     </section>

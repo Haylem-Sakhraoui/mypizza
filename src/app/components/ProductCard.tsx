@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, Minus, Check, ChevronDown, ShoppingCart } from "lucide-react";
+import { toast } from "sonner";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { useCart } from "../context/CartContext";
 import { useStoreStatus } from "../lib/useBusinessHours";
@@ -44,6 +45,7 @@ export function ProductCard({
   const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
+  const [sizeShake, setSizeShake] = useState(false);
   const { addItem } = useCart();
   const { open: isOpen, reason } = useStoreStatus();
 
@@ -114,7 +116,11 @@ export function ProductCard({
         {hasSizes && sizes.length > 0 && (
           <div className="mt-3">
             <p className="text-xs font-bold text-gray-600 mb-1.5">Größe wählen:</p>
-            <div className="flex flex-wrap gap-1.5">
+            <div
+              className="flex flex-wrap gap-1.5"
+              style={sizeShake ? { animation: "shake 0.4s ease-in-out", outline: "2px solid #ef4444", borderRadius: "8px", padding: "4px" } : {}}
+            >
+              <style>{`@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}`}</style>
               {sizes.map((s) => (
                 <button
                   key={s.id}
@@ -135,7 +141,7 @@ export function ProductCard({
               ))}
             </div>
             {!selectedSize && (
-              <p className="text-xs text-orange-500 mt-1 font-medium">Bitte eine Größe wählen</p>
+              <p className={`text-xs text-orange-500 mt-1 font-medium transition-all ${sizeShake ? "font-black text-red-500" : ""}`}>👆 Bitte eine Größe wählen</p>
             )}
           </div>
         )}
@@ -212,18 +218,24 @@ export function ProductCard({
             Anrufen
           </a>
           <button
-            disabled={!isOpen || !canAddToCart}
-            title={!isOpen ? "Bestellungen ab 18:00 Uhr" : !canAddToCart ? "Bitte zuerst eine Größe wählen" : undefined}
+            disabled={!isOpen}
+            title={!isOpen ? "Bestellungen ab 18:00 Uhr" : undefined}
             className={`flex-1 py-2 rounded-full text-white text-sm font-bold transition-all duration-200 flex items-center justify-center gap-1.5 ${
-              !isOpen || !canAddToCart
+              !isOpen
                 ? "bg-gray-300 cursor-not-allowed opacity-60"
                 : added
                 ? "bg-green-500"
                 : "hover:opacity-90 hover:scale-105"
             }`}
-            style={(!isOpen || !canAddToCart) || added ? {} : { backgroundColor: "#ec6408" }}
+            style={!isOpen || added ? {} : { backgroundColor: "#ec6408" }}
             onClick={() => {
-              if (!isOpen || !canAddToCart) return;
+              if (!isOpen) return;
+              if (!canAddToCart) {
+                toast.error("Bitte zuerst eine Größe auswählen", { duration: 3000 });
+                setSizeShake(true);
+                setTimeout(() => setSizeShake(false), 800);
+                return;
+              }
               // Determine price: selected size price or parse base price string
               const numericPrice = resolvedPrice !== null
                 ? resolvedPrice
