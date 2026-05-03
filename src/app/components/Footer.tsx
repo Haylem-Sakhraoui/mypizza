@@ -41,7 +41,7 @@ export function Footer() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <img
-                src="/logohero.png"
+                src="/loghero.png"
                 alt="My Pizza Notdienst"
                 className="h-12 w-auto object-contain"
               />
@@ -104,7 +104,7 @@ export function Footer() {
               <div className="flex items-center gap-3">
                 <Mail size={16} style={{ color: "#ec6408" }} className="flex-shrink-0" />
                 <a href="mailto:mypizzaerfurt@gmail.com" className="text-gray-300 text-sm hover:text-white transition-colors font-bold">
-                  mypizzaerfurt@gmail.com
+                  kontakt@mypizza-erfurt.de
                 </a>
               </div>
               <div className="flex items-center gap-3">

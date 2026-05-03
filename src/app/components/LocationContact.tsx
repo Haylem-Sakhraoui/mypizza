@@ -130,23 +130,29 @@ export function LocationContact() {
             </div>
           </div>
 
-          {/* Map Placeholder */}
+          {/* Map — free OpenStreetMap embed, no API key needed */}
           <div className="rounded-3xl overflow-hidden shadow-md border border-gray-100 h-96 lg:h-full min-h-80 relative bg-gray-100">
             <iframe
-              title="My Pizza Erfurt"
+              title="My Pizza Erfurt – Karte"
               width="100%"
               height="100%"
               loading="lazy"
               className="w-full h-full"
-              style={{ filter: "saturate(1.1) contrast(1.05)", minHeight: "320px" }}
-              src={`https://www.google.com/maps/embed/v1/place?key=${import.meta.env.VITE_GOOGLE_MAPS_KEY}&q=Schmiedstedter+Str+28,+99084+Erfurt`}
+              style={{ minHeight: "320px", border: 0 }}
+              src="https://www.openstreetmap.org/export/embed.html?bbox=11.0167%2C50.9793%2C11.0267%2C50.9853&layer=mapnik&marker=50.9823%2C11.0217"
+              allowFullScreen
             />
-            {/* Fallback overlay for when API key doesn't work */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center bg-gradient-to-br from-gray-100 to-gray-200 pointer-events-none opacity-0">
-              <MapPin size={40} style={{ color: "#ec6408" }} />
-              <p className="mt-3 font-bold text-gray-700">My Pizza Erfurt</p>
-              <p className="text-gray-500 text-sm">Schmiedstedter Str 28, 99084</p>
-            </div>
+            {/* Overlay button — always visible, redirects to Google Maps */}
+            <a
+              href="https://maps.google.com?q=Schmiedstedter+Str+28+99084+Erfurt"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 px-5 py-2.5 rounded-full text-white text-sm font-bold shadow-xl hover:scale-105 transition-transform duration-200"
+              style={{ backgroundColor: "#ec6408", zIndex: 10 }}
+            >
+              <MapPin size={15} />
+              In Google Maps öffnen
+            </a>
           </div>
         </div>
       </div>
