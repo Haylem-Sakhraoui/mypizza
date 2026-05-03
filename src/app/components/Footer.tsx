@@ -101,7 +101,6 @@ export function Footer() {
                   01771313310
                 </a>
               </div>
-              // add email contact
               <div className="flex items-center gap-3">
                 <Mail size={16} style={{ color: "#ec6408" }} className="flex-shrink-0" />
                 <a href="mailto:mypizzaerfurt@gmail.com" className="text-gray-300 text-sm hover:text-white transition-colors font-bold">

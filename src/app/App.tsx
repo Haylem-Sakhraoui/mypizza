@@ -34,8 +34,8 @@ export default function App() {
       <ErrorBoundary><BurgersSection /></ErrorBoundary>
       <ErrorBoundary><GetraenkeSection /></ErrorBoundary>
       <ErrorBoundary><NachtischSection /></ErrorBoundary>
-      <SaucesSection />
-      <BuildYourPizza />
+      {/* <SaucesSection /> */}
+      {/* <BuildYourPizza /> */}
       <LocationContact />
       <Footer />
     </div>
