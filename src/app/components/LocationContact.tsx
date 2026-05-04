@@ -41,7 +41,7 @@ export function LocationContact() {
                 <p className="text-gray-600 text-sm mt-0.5">Schmiedstedter Str 28</p>
                 <p className="text-gray-600 text-sm">99084 Erfurt</p>
                 <a
-                  href="https://maps.google.com?q=Schmiedstedter+Str+28+99084+Erfurt"
+                  href="https://share.google/TkfLOeGTIlcRfJnTq"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 mt-2 text-xs font-semibold hover:opacity-80 transition-opacity"
@@ -82,14 +82,14 @@ export function LocationContact() {
             </div>
 
             {/* Hours */}
-            <div className="flex items-start gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-100">
+            {/* <div className="flex items-start gap-4 p-5 bg-gray-50 rounded-2xl border border-gray-100">
               <div
                 className="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0"
                 style={{ backgroundColor: "#ec640815" }}
               >
                 <Clock style={{ color: "#ec6408" }} size={22} />
-              </div>
-              <div>
+              </div> */}
+              {/* <div>
                 <p className="text-gray-900 font-bold" style={{ fontSize: "0.95rem" }}>
                   Öffnungszeiten
                 </p>
@@ -111,8 +111,8 @@ export function LocationContact() {
                   <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                   Jetzt geöffnet (bis 03:00)
                 </div>
-              </div>
-            </div>
+              </div> */}
+            {/* </div> */}
 
             {/* Delivery info */}
             <div className="p-5 rounded-2xl border border-gray-100"
