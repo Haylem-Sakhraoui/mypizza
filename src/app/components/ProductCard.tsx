@@ -210,13 +210,6 @@ export function ProductCard({
               <Plus size={12} className="text-gray-600" />
             </button>
           </div>
-          <a
-            href="tel:01771313310"
-            className="flex-1 py-2 rounded-full text-white text-sm font-bold hover:opacity-90 hover:scale-105 transition-all duration-200 flex items-center justify-center"
-            style={{ backgroundColor: "#ec6408" }}
-          >
-            Anrufen
-          </a>
           <button
             disabled={!isOpen}
             title={!isOpen ? "Bestellungen ab 18:00 Uhr" : undefined}
