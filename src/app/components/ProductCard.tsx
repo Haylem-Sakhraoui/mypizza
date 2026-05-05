@@ -5,6 +5,7 @@ import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { useCart } from "../context/CartContext";
 import { useStoreStatus } from "../lib/useBusinessHours";
 import { StoreGate } from "./StoreGate";
+import { openAllergenModal } from "./AllergeneModal";
 import type { ProductSize } from "../lib/useProducts";
 
 interface ProductCardProps {
@@ -19,6 +20,24 @@ interface ProductCardProps {
   hasSizes?: boolean;
   sizes?: ProductSize[];
 }
+
+/** Maps Supabase allergen slugs → display codes */
+const ALLERGEN_CODE: Record<string, string> = {
+  gluten:          "A1",
+  krebstiere:      "A2",
+  eier:            "A3",
+  fisch:           "A4",
+  erdnuesse:       "A5",
+  soja:            "A6",
+  milch:           "A7",
+  schalenfruechte: "A8",
+  sellerie:        "A9",
+  senf:            "A10",
+  sesam:           "A11",
+  sulfite:         "A12",
+  lupinen:         "A13",
+  weichtiere:      "A14",
+};
 
 const defaultExtras = [
   "Extra Käse",
@@ -55,18 +74,34 @@ export function ProductCard({
     );
   };
 
-  const extrasList = extras ?? defaultExtras;
+  const extrasList = extras ?? [];
 
-  // For size products: price is driven by selection; otherwise parse the string prop
+  /** Parse the numeric extra price from label strings like "Edmar (+1,50 €)" */
+  function parseExtraPrice(label: string): number {
+    const m = label.match(/\+([\d,\.]+)/);
+    if (!m) return 0;
+    return parseFloat(m[1].replace(",", "."));
+  }
+
+  const extrasPrice = selected.reduce((sum, s) => sum + parseExtraPrice(s), 0);
+
   const resolvedPrice = selectedSize
     ? selectedSize.price
     : null;
 
-  const displayPrice = selectedSize
-    ? selectedSize.price.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"
+  const basePrice = resolvedPrice !== null
+    ? resolvedPrice
     : hasSizes && sizes.length > 0
-    ? "Ab " + Math.min(...sizes.map((s) => s.price)).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"
-    : price;
+    ? Math.min(...sizes.map((s) => s.price))
+    : parseFloat(price.replace("€", "").replace(",", ".").trim());
+
+  const totalUnitPrice = basePrice + extrasPrice;
+
+  const displayPrice = selectedSize
+    ? (selectedSize.price + extrasPrice).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"
+    : hasSizes && sizes.length > 0
+    ? "Ab " + (Math.min(...sizes.map((s) => s.price)) + extrasPrice).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €"
+    : (parseFloat(price.replace("€", "").replace(",", ".").trim()) + extrasPrice).toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " €";
 
   const canAddToCart = !hasSizes || sizes.length === 0 || selectedSize !== null;
 
@@ -106,10 +141,24 @@ export function ProductCard({
           {description}
         </p>
         {allergene && (
-          <p className="mt-1.5 text-xs text-gray-400" style={{ lineHeight: 1.4 }}>
-            <span className="font-semibold text-gray-500">Allergene: </span>
-            {allergene}
-          </p>
+          <div className="mt-1.5 flex flex-wrap gap-1 items-center">
+            <span className="text-xs font-semibold text-gray-500 mr-0.5">Allergene:</span>
+            {allergene.split(/[,\s]+/).filter(Boolean).map((raw) => {
+              const code = ALLERGEN_CODE[raw.trim().toLowerCase()] ?? raw.trim();
+              return (
+                <button
+                  key={raw}
+                  type="button"
+                  onClick={openAllergenModal}
+                  className="text-white text-[0.6rem] font-black px-1.5 py-0.5 rounded-full hover:opacity-80 transition-opacity"
+                  style={{ backgroundColor: "#ec6408" }}
+                  title="Allergene ansehen"
+                >
+                  {code}
+                </button>
+              );
+            })}
+          </div>
         )}
 
         {/* Size selector */}
@@ -146,7 +195,8 @@ export function ProductCard({
           </div>
         )}
 
-        {/* Customize toggle */}
+        {/* Customize toggle — only shown when extras are available */}
+        {extrasList.length > 0 && (
         <button
           onClick={() => setCustomizeOpen(!customizeOpen)}
           className="mt-3 flex items-center gap-1 text-xs font-bold transition-colors"
@@ -158,6 +208,7 @@ export function ProductCard({
           />
           Zutaten anpassen
         </button>
+        )}
 
         {/* Customize Panel */}
         {customizeOpen && (
@@ -229,20 +280,18 @@ export function ProductCard({
                 setTimeout(() => setSizeShake(false), 800);
                 return;
               }
-              // Determine price: selected size price or parse base price string
-              const numericPrice = resolvedPrice !== null
-                ? resolvedPrice
-                : parseFloat(price.replace("€", "").replace(",", ".").trim());
-              // Cart id encodes product + size to allow same product in different sizes as separate items
+              // Cart id encodes product + size + extras so same product with different extras = separate lines
+              const extrasKey = selected.length > 0 ? "_" + selected.map((e) => e.replace(/\s/g, "")).join("-") : "";
               const cartId = selectedSize
-                ? `${productId}_${selectedSize.id}`
-                : productId;
+                ? `${productId}_${selectedSize.id}${extrasKey}`
+                : `${productId}${extrasKey}`;
               for (let i = 0; i < qty; i++) {
                 addItem({
                   id: cartId,
                   name: title,
-                  price: numericPrice,
+                  price: totalUnitPrice,
                   sizeLabel: selectedSize?.label,
+                  extras: selected.length > 0 ? [...selected] : undefined,
                 });
               }
               setAdded(true);

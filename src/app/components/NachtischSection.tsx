@@ -1,8 +1,9 @@
 import { ProductCard } from "./ProductCard";
-import { useProducts, formatPrice } from "../lib/useProducts";
+import { useProducts, useExtras, formatPrice } from "../lib/useProducts";
 
 export function NachtischSection() {
   const { products, loading, error } = useProducts("nachtisch");
+  const { extras } = useExtras("nachtisch");
 
   return (
     <section id="nachtisch" className="py-16 bg-gray-50">
@@ -46,6 +47,7 @@ export function NachtischSection() {
                   description={dessert.description ?? ""}
                   price={formatPrice(dessert.base_price)}
                   badge={dessert.badge ?? undefined}
+                  extras={extras}
                   allergene={dessert.allergene}
                   productId={dessert.id}
                   hasSizes={dessert.has_sizes}

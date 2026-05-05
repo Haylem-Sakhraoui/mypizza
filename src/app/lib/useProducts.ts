@@ -73,6 +73,10 @@ export function useProducts(categorySlug: string) {
       } else {
         const mapped = (data ?? []).map((p: any) => ({
           ...p,
+          // allergene can be a TEXT[] array from Postgres — normalise to a space-separated string
+          allergene: Array.isArray(p.allergene)
+            ? p.allergene.join(" ")
+            : p.allergene ?? null,
           sizes: (p.product_sizes ?? []).map((s: any) => ({
             id: s.id,
             label: s.label,
@@ -92,4 +96,55 @@ export function useProducts(categorySlug: string) {
   }, [categorySlug]);
 
   return { products, loading, error };
+}
+
+/**
+ * Fetch extras for a given category slug via the category_extras join table.
+ * Returns labels formatted as "Name (+1,00 €)" when price > 0, else just "Name".
+ */
+export function useExtras(categorySlug: string): { extras: string[]; loading: boolean } {
+  const [extras, setExtras] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      const { data: cat } = await supabase
+        .from("categories")
+        .select("id")
+        .eq("slug", categorySlug)
+        .single();
+
+      if (!cat) {
+        if (!cancelled) setLoading(false);
+        return;
+      }
+
+      const { data } = await supabase
+        .from("category_extras")
+        .select("extras(id, name, price)")
+        .eq("category_id", cat.id);
+
+      if (!cancelled) {
+        const items = (data ?? [])
+          .map((row: any) => {
+            const e = row.extras;
+            if (!e) return null;
+            const price = Number(e.price);
+            return price > 0
+              ? `${e.name} (+${price.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} \u20ac)`
+              : e.name;
+          })
+          .filter(Boolean) as string[];
+        setExtras(items);
+        setLoading(false);
+      }
+    }
+
+    load();
+    return () => { cancelled = true; };
+  }, [categorySlug]);
+
+  return { extras, loading };
 }

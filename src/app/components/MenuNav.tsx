@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 
 const categories = [
+  { label: "👶 Kinder Menü", id: "kinder-menu" },
   { label: "🍕 Pizza", id: "pizza" },
   { label: "🌯 French Tacos", id: "french-tacos" },
   { label: "🍟 Snacks", id: "snacks" },
-  { label: "👶 Kinder Menü", id: "kinder-menu" },
   { label: "🍔 Burger", id: "burger" },
   { label: "🥤 Getränke", id: "getraenke" },
   { label: "🍦 Nachtisch", id: "nachtisch" },
 ];
 
 export function MenuNav() {
-  const [active, setActive] = useState("pizza");
+  const [active, setActive] = useState("kinder-menu");
   const [sticky, setSticky] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);

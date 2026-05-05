@@ -1,8 +1,9 @@
 import { ProductCard } from "./ProductCard";
-import { useProducts, formatPrice } from "../lib/useProducts";
+import { useProducts, useExtras, formatPrice } from "../lib/useProducts";
 
 export function KinderMenuSection() {
   const { products, loading, error } = useProducts("kinder_menue");
+  const { extras } = useExtras("kinder_menue");
 
   return (
     <section id="kinder-menu" className="py-16" style={{ backgroundColor: "#fffbeb" }}>
@@ -50,6 +51,7 @@ export function KinderMenuSection() {
                   description={item.description ?? ""}
                   price={formatPrice(item.base_price)}
                   badge={item.badge ?? undefined}
+                  extras={extras}
                   allergene={item.allergene}
                   productId={item.id}
                   hasSizes={item.has_sizes}

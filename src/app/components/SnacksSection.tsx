@@ -1,16 +1,9 @@
 import { ProductCard } from "./ProductCard";
-import { useProducts, formatPrice } from "../lib/useProducts";
-
-const SNACKS_EXTRAS = [
-  "Extra Dip-Sauce",
-  "Extra Scharf 🌶️",
-  "Extra Portion (+1,50€)",
-  "Mit Käse überbacken",
-  "Ohne Salz",
-];
+import { useProducts, useExtras, formatPrice } from "../lib/useProducts";
 
 export function SnacksSection() {
   const { products, loading, error } = useProducts("snacks");
+  const { extras } = useExtras("snacks");
 
   return (
     <section id="snacks" className="py-16 bg-white">
@@ -61,7 +54,7 @@ export function SnacksSection() {
                   description={snack.description ?? ""}
                   price={formatPrice(snack.base_price)}
                   badge={snack.badge ?? undefined}
-                  extras={SNACKS_EXTRAS}
+                  extras={extras}
                   allergene={snack.allergene}
                   productId={snack.id}
                   hasSizes={snack.has_sizes}

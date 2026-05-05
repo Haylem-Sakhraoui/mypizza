@@ -1,4 +1,5 @@
 import { Phone, MapPin, Clock, Instagram, Facebook, Twitter, Mail } from "lucide-react";
+import { openAllergenModal } from "./AllergeneModal";
 
 const navLinks = [
   { label: "🍕 Unsere Pizzen", id: "pizza" },
@@ -81,6 +82,14 @@ export function Footer() {
                   </button>
                 </li>
               ))}
+              <li>
+                <button
+                  onClick={openAllergenModal}
+                  className="text-gray-400 text-sm hover:text-white transition-colors text-left"
+                >
+                  ⚠️ Allergene
+                </button>
+              </li>
             </ul>
           </div>
 

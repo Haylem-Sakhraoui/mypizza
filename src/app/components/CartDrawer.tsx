@@ -90,6 +90,11 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                         {item.sizeLabel}
                       </p>
                     )}
+                    {item.extras && item.extras.length > 0 && (
+                      <p className="text-[0.67rem] text-gray-400 mt-0.5 leading-snug">
+                        + {item.extras.join(", ")}
+                      </p>
+                    )}
                     <p className="text-xs text-gray-500 mt-0.5">
                       {item.price.toFixed(2).replace(".", ",")} € pro Stück
                     </p>

@@ -1,17 +1,9 @@
 import { ProductCard } from "./ProductCard";
-import { useProducts, formatPrice } from "../lib/useProducts";
-
-const PIZZA_EXTRAS = [
-  "Extra Mozzarella",
-  "Extra Sauce",
-  "Keine Zwiebeln",
-  "Extra Scharf 🌶️",
-  "Glutenfrei (+1,50€)",
-  "Kein Knoblauch",
-];
+import { useProducts, useExtras, formatPrice } from "../lib/useProducts";
 
 export function PizzaSection() {
   const { products, loading, error } = useProducts("pizza");
+  const { extras } = useExtras("pizza");
 
 
   return (
@@ -56,7 +48,7 @@ export function PizzaSection() {
                   description={pizza.description ?? ""}
                   price={formatPrice(pizza.base_price)}
                   badge={pizza.badge ?? undefined}
-                  extras={PIZZA_EXTRAS}
+                  extras={extras}
                   allergene={pizza.allergene}
                   productId={pizza.id}
                   hasSizes={pizza.has_sizes}

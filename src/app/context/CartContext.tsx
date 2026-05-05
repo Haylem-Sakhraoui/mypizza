@@ -1,11 +1,12 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 
 export interface CartItem {
-  id: string;       // encodes productId + sizeLabel for uniqueness
+  id: string;       // encodes productId + sizeLabel + extras for uniqueness
   name: string;
-  price: number;
+  price: number;    // base price + extras price per unit
   qty: number;
   sizeLabel?: string;
+  extras?: string[]; // selected extra names (display only)
 }
 
 interface CartContextType {
@@ -33,7 +34,7 @@ function loadCartFromStorage(): CartItem[] {
         typeof i.name === "string" &&
         typeof i.price === "number" &&
         typeof i.qty === "number"
-      // sizeLabel is optional — no strict check needed
+      // sizeLabel, extras are optional — no strict check needed
     );
   } catch {
     return [];

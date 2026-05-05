@@ -1,17 +1,9 @@
 import { ProductCard } from "./ProductCard";
-import { useProducts, formatPrice } from "../lib/useProducts";
-
-const BURGER_EXTRAS = [
-  "Extra Käse",
-  "Extra Patty (+2€)",
-  "Keine Zwiebeln",
-  "Extra Bacon (+1,50€)",
-  "Extra Scharf 🌶️",
-  "Glutenfrei Bun (+1€)",
-];
+import { useProducts, useExtras, formatPrice } from "../lib/useProducts";
 
 export function BurgersSection() {
   const { products, loading, error } = useProducts("burger");
+  const { extras } = useExtras("burger");
 
   return (
     <section id="burger" className="py-16 bg-gray-50">
@@ -55,7 +47,7 @@ export function BurgersSection() {
                   description={burger.description ?? ""}
                   price={formatPrice(burger.base_price)}
                   badge={burger.badge ?? undefined}
-                  extras={BURGER_EXTRAS}
+                  extras={extras}
                   allergene={burger.allergene}
                   productId={burger.id}
                   hasSizes={burger.has_sizes}

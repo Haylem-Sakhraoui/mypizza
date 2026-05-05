@@ -1,17 +1,9 @@
 import { ProductCard } from "./ProductCard";
-import { useProducts, formatPrice } from "../lib/useProducts";
-
-const TACOS_EXTRAS = [
-  "Extra Käse",
-  "Extra Sauce",
-  "Keine Zwiebeln",
-  "Extra Scharf 🌶️",
-  "Doppelt Fleisch (+2€)",
-  "Glutenfrei (+1€)",
-];
+import { useProducts, useExtras, formatPrice } from "../lib/useProducts";
 
 export function FrenchTacosSection() {
   const { products, loading, error } = useProducts("french-tacos");
+  const { extras } = useExtras("french-tacos");
 
   return (
     <section id="french-tacos" className="py-16 bg-white">
@@ -78,7 +70,7 @@ export function FrenchTacosSection() {
                   description={taco.description ?? ""}
                   price={formatPrice(taco.base_price)}
                   badge={taco.badge ?? undefined}
-                  extras={TACOS_EXTRAS}
+                  extras={extras}
                   allergene={taco.allergene}
                   productId={taco.id}
                   hasSizes={taco.has_sizes}

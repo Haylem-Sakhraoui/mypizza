@@ -10,11 +10,10 @@ import { BurgersSection } from "./components/BurgersSection";
 import { GetraenkeSection } from "./components/GetraenkeSection";
 import { NachtischSection } from "./components/NachtischSection";
 import { SpecialOffers } from "./components/SpecialOffers";
-import { SaucesSection } from "./components/SaucesSection";
-import { BuildYourPizza } from "./components/BuildYourPizza";
 import { LocationContact } from "./components/LocationContact";
 import { Footer } from "./components/Footer";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { AllergeneModal } from "./components/AllergeneModal";
 import { useStoreStatus } from "./lib/useBusinessHours";
 
 export default function App() {
@@ -27,17 +26,17 @@ export default function App() {
       <Hero />
       <MenuNav />
       <KinderMenuSection />
-      <ErrorBoundary><FrenchTacosSection /></ErrorBoundary>
       <ErrorBoundary><PizzaSection /></ErrorBoundary>
-      <SpecialOffers />
+      <ErrorBoundary><FrenchTacosSection /></ErrorBoundary>
       <ErrorBoundary><SnacksSection /></ErrorBoundary>
       <ErrorBoundary><BurgersSection /></ErrorBoundary>
       <ErrorBoundary><GetraenkeSection /></ErrorBoundary>
       <ErrorBoundary><NachtischSection /></ErrorBoundary>
-      {/* <SaucesSection /> */}
-      {/* <BuildYourPizza /> */}
+      <SpecialOffers />
       <LocationContact />
       <Footer />
+      {/* Allergen modal — self-contained, opens via openAllergenModal() from anywhere */}
+      <AllergeneModal />
     </div>
   );
 }

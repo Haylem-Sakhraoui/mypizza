@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Phone, Menu, X, ShoppingBag } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { CartDrawer } from "./CartDrawer";
+import { openAllergenModal } from "./AllergeneModal";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -15,8 +16,13 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollTo = (id: string) => {
-    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      const offset = 130;
+      const top = el.getBoundingClientRect().top + window.scrollY - offset;
+      window.scrollTo({ top, behavior: "smooth" });
+    }
     setMenuOpen(false);
   };
 
@@ -40,6 +46,7 @@ export function Navbar() {
           {/* Desktop Nav Links */}
           <div className="hidden lg:flex items-center gap-6">
             {[
+              { label: "Kinder Menü", id: "kinder-menu" },
               { label: "Pizzen", id: "pizza" },
               { label: "French Tacos", id: "french-tacos" },
               { label: "Snacks", id: "snacks" },
@@ -48,7 +55,7 @@ export function Navbar() {
             ].map((item) => (
               <button
                 key={item.id}
-                onClick={() => scrollTo(item.id)}
+                onClick={() => scrollToSection(item.id)}
                 className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors relative group"
               >
                 {item.label}
@@ -58,6 +65,16 @@ export function Navbar() {
                 />
               </button>
             ))}
+            <button
+              onClick={openAllergenModal}
+              className="text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors relative group"
+            >
+              Allergene
+              <span
+                className="absolute -bottom-1 left-0 w-0 h-0.5 group-hover:w-full transition-all duration-300 rounded-full"
+                style={{ backgroundColor: "#ec6408" }}
+              />
+            </button>
           </div>
 
           {/* Phone + CTA */}
@@ -111,6 +128,7 @@ export function Navbar() {
         {menuOpen && (
           <div className="lg:hidden border-t border-gray-100 py-4 space-y-1">
             {[
+              { label: "👶 Kinder Menü", id: "kinder-menu" },
               { label: "🍕 Unsere Pizzen", id: "pizza" },
               { label: "🌯 French Tacos", id: "french-tacos" },
               { label: "🍟 Snacks", id: "snacks" },
@@ -118,17 +136,23 @@ export function Navbar() {
               { label: "🎁 Angebote", id: "offers" },
               { label: "📍 Kontakt", id: "contact" },
               { label: "🥤 Getränke", id: "getraenke" },
-              { label: "🍦 Nachtisch", id: "nachtisch" }, 
+              { label: "🍦 Nachtisch", id: "nachtisch" },
 
             ].map((item) => (
               <button
                 key={item.id}
-                onClick={() => scrollTo(item.id)}
+                onClick={() => scrollToSection(item.id)}
                 className="w-full text-left px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-orange-50 rounded-xl transition-colors"
               >
                 {item.label}
               </button>
             ))}
+            <button
+              onClick={() => { openAllergenModal(); setMenuOpen(false); }}
+              className="w-full text-left block px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-orange-50 rounded-xl transition-colors"
+            >
+              ⚠️ Allergene
+            </button>
             <div className="px-4 pt-2">
               <a href="tel:01771313310" className="flex items-center gap-2 text-gray-700">
                 <Phone size={16} style={{ color: "#ec6408" }} />
