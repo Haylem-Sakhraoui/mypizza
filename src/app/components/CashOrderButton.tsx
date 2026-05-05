@@ -3,7 +3,6 @@ import { Banknote, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "../context/CartContext";
 import { placeOfflineOrder, type CustomerInfo } from "../lib/supabase";
-import { fetchStoreSettings } from "../lib/useBusinessHours";
 
 interface OfflineOrderButtonProps {
   method: "cash" | "ec";
@@ -96,24 +95,6 @@ export function OfflineOrderButton({
     setErrorMsg("");
 
     try {
-      const settings = await fetchStoreSettings();
-      const isOpen =
-        !settings ||
-        settings.mode === "force_open" ||
-        (settings.mode === "automatic" &&
-          (() => {
-            const h = new Date().getHours();
-            return h >= 18 || h < 4;
-          })());
-
-      if (!isOpen) {
-        setStatus("error");
-        setErrorMsg(
-          settings?.reason?.trim() || "Wir haben momentan geschlossen. Bestellungen ab 18:00 Uhr."
-        );
-        return;
-      }
-
       await placeOfflineOrder(method, {
         customer_name: customer.name,
         phone: customer.phone,
@@ -127,9 +108,11 @@ export function OfflineOrderButton({
         total_price: discountedTotal,
         promo_code: promoCode ?? undefined,
         discount_amount: discountAmount,
+        notes: customer.notes ?? undefined,
       });
 
       clearCart();
+      setStatus("idle");
       toast.custom(() => <OrderSuccessToast method={method} />, { duration: 7000 });
     } catch (err) {
       console.error("[OfflineOrder] Error:", err);

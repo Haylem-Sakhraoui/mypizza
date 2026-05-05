@@ -17,6 +17,7 @@ export interface CustomerInfo {
   name: string;
   phone: string;
   address: DeliveryAddress;
+  notes?: string;
 }
 
 export interface OrderItem {
@@ -37,6 +38,7 @@ export async function upsertPendingOrder(payload: {
   promo_code?: string;
   discount_amount?: number;
   payment_method?: "paypal" | "cash" | "ec";
+  notes?: string;
 }): Promise<string> {
   // 1. Insert the order header
   const { data, error } = await supabase
@@ -49,6 +51,7 @@ export async function upsertPendingOrder(payload: {
         total_price: payload.total_price,
         promo_code: payload.promo_code ?? null,
         discount_amount: payload.discount_amount ?? 0,
+        notes: payload.notes ?? null,
         status: "pending",
         payment_method: payload.payment_method ?? "paypal",
         created_at: new Date().toISOString(),
@@ -95,6 +98,7 @@ export async function placeOfflineOrder(
     total_price: number;
     promo_code?: string;
     discount_amount?: number;
+    notes?: string;
   }
 ): Promise<string> {
   return upsertPendingOrder({ ...payload, payment_method: method });

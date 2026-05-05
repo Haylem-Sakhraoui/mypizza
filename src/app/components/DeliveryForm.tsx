@@ -15,6 +15,7 @@ type FormValues = {
   street: string;
   plz: string;
   city: string;
+  notes: string;
 };
 
 function loadSaved(): Partial<FormValues> {
@@ -49,15 +50,16 @@ export function DeliveryForm({ onValid }: DeliveryFormProps) {
   const street = watch("street") ?? "";
   const plz    = watch("plz")    ?? "";
   const city   = watch("city")   ?? "";
+  const notes  = watch("notes")  ?? "";
 
   // Effect 1 — localStorage persistence only. No parent callback here.
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, phone, street, plz, city }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, phone, street, plz, city, notes }));
     } catch {
       // ignore private-mode quota errors
     }
-  }, [name, phone, street, plz, city]);
+  }, [name, phone, street, plz, city, notes]);
 
   // Effect 2 — notify parent. Fires only when isValid or a field value
   // actually changes (primitive comparison → no spurious re-runs).
@@ -71,10 +73,11 @@ export function DeliveryForm({ onValid }: DeliveryFormProps) {
           plz: plz.trim(),
           city: city.trim(),
         },
+        notes: notes.trim() || undefined,
       });
     }
     // onValidRef is intentionally excluded — it's a stable ref, not a value.
-  }, [isValid, name, phone, street, plz, city]);
+  }, [isValid, name, phone, street, plz, city, notes]);
 
   const fieldClass = (hasError: boolean) =>
     `w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-colors ${
@@ -198,6 +201,16 @@ export function DeliveryForm({ onValid }: DeliveryFormProps) {
           Adresse bestätigt — bitte jetzt bezahlen
         </div>
       )}
+
+      {/* Notes */}
+      <div>
+        <textarea
+          {...register("notes")}
+          placeholder="Besondere Wünsche oder Anmerkungen (optional)…"
+          rows={3}
+          className="w-full px-3 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm outline-none transition-colors focus:border-orange-400 focus:ring-2 focus:ring-orange-100 resize-none"
+        />
+      </div>
     </div>
   );
 }

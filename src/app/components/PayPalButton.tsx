@@ -2,18 +2,8 @@ import { PayPalButtons } from "@paypal/react-paypal-js";
 import { toast } from "sonner";
 import { useCart } from "../context/CartContext";
 import { upsertPendingOrder, markOrderPaid, type CustomerInfo } from "../lib/supabase";
-import { fetchStoreSettings } from "../lib/useBusinessHours";
 import { useState, useRef } from "react";
 import { OrderSuccessToast } from "./CashOrderButton";
-
-function isNetworkError(err: unknown): boolean {
-  if (err instanceof ProgressEvent) return true;
-  if (err instanceof TypeError) {
-    const msg = (err as TypeError).message.toLowerCase();
-    return msg.includes("network") || msg.includes("failed to fetch") || msg.includes("load");
-  }
-  return !navigator.onLine;
-}
 
 interface PayPalButtonProps {
   customer: CustomerInfo;
@@ -27,9 +17,7 @@ export function PayPalButton({ customer, discountedTotal, promoCode, discountAmo
   const [status, setStatus] = useState<"idle" | "processing" | "error" | "cancelled">("idle");
   const [message, setMessage] = useState("");
 
-  // Hold the Supabase order UUID between createOrder → onApprove
-  const supabaseOrderIdRef = useRef<string | null>(null);
-  // Set to true the instant capture() resolves — guards onError / onCancel from overwriting success
+  // Guards onError / onCancel from overwriting a confirmed payment
   const capturedRef = useRef<boolean>(false);
 
   const safeTotal = Math.max(0.01, discountedTotal);
@@ -54,55 +42,18 @@ export function PayPalButton({ customer, discountedTotal, promoCode, discountAmo
         </div>
       )}
 
-      {/* Hide the PayPal button while processing */}
       {status !== "processing" && (
         <PayPalButtons
           style={{ layout: "vertical", shape: "rect", label: "pay" }}
-          createOrder={async (_data, actions) => {
-            if (!navigator.onLine) {
-              setStatus("error");
-              setMessage("Verbindung unterbrochen. Bitte prüfen Sie Ihre Internetverbindung.");
-              throw new Error("offline");
-            }
-
-            // ── 0. Server-side guard: re-check store open status before any charge ──
-            const settings = await fetchStoreSettings();
-            const isOpen =
-              !settings ||
-              settings.mode === "force_open" ||
-              (settings.mode === "automatic" &&
-                (() => { const h = new Date().getHours(); return h >= 18 || h < 4; })());
-            if (!isOpen) {
-              const msg =
-                settings?.reason?.trim() ||
-                "Wir haben momentan geschlossen. Bestellungen ab 18:00 Uhr.";
-              setStatus("error");
-              setMessage(msg);
-              throw new Error("store_closed");
-            }
-
-            setStatus("processing");
+          /**
+           * createOrder MUST stay synchronous — any async Supabase call here
+           * breaks the browser's user-gesture chain and causes PayPal to get
+           * stuck on "loading" instead of redirecting to the payment page.
+           * All DB work is deferred to onApprove (after the popup closes).
+           */
+          createOrder={(_data, actions) => {
+            capturedRef.current = false;
             setMessage("");
-            capturedRef.current = false; // reset for this attempt
-
-            // ── 1. Insert pending order into Supabase ─────────────────────────────
-            const dbOrderId = await upsertPendingOrder({
-              customer_name: customer.name,
-              phone: customer.phone,
-              delivery_address: customer.address,
-              items: items.map((i) => ({
-                name: i.name,
-                price: i.price,
-                qty: i.qty,
-                sizeLabel: i.sizeLabel,
-              })),
-              total_price: safeTotal,
-              promo_code: promoCode ?? undefined,
-              discount_amount: discountAmount,
-            });
-            supabaseOrderIdRef.current = dbOrderId;
-
-            // ── 2. Create the PayPal order ─────────────────────────────────────────
             return actions.order.create({
               intent: "CAPTURE",
               purchase_units: [
@@ -121,7 +72,6 @@ export function PayPalButton({ customer, discountedTotal, promoCode, discountAmo
                       country_code: "DE",
                     },
                   },
-                  custom_id: dbOrderId,
                 },
               ],
               application_context: {
@@ -133,13 +83,13 @@ export function PayPalButton({ customer, discountedTotal, promoCode, discountAmo
             });
           }}
           onApprove={async (_data, actions) => {
-            // ── Step A: Capture the payment (money transaction) ──────────────────
-            // Separate try/catch so only a real capture failure shows an error.
+            setStatus("processing");
+
+            // ── Step A: Capture the payment ───────────────────────────────────
             let details: any;
             try {
               details = await actions.order!.capture();
             } catch (captureErr) {
-              // Capture failed — no money was taken
               console.error("PayPal capture failed:", captureErr);
               setStatus("error");
               setMessage(
@@ -148,69 +98,56 @@ export function PayPalButton({ customer, discountedTotal, promoCode, discountAmo
               return;
             }
 
-            // ── Money is captured. Immediately lock success state so nothing can overwrite it ──
             capturedRef.current = true;
             const paypalOrderId = details.id as string;
             const payerId = details.payer?.payer_id ?? "unknown";
-            const captureStatus: string =
-              details?.purchase_units?.[0]?.payments?.captures?.[0]?.status ?? "";
 
-            console.log("[PayPal] Capture response:", {
-              paypalOrderId,
-              payerId,
-              captureStatus,
-            });
+            // Snapshot items before clearCart
+            const capturedItems = items.map((i) => ({
+              name: i.name,
+              price: i.price,
+              qty: i.qty,
+              sizeLabel: i.sizeLabel,
+            }));
 
-            // ── Step B: Show success immediately — do NOT block on DB ────────────
+            // ── Step B: Show success immediately ─────────────────────────────
             setStatus("idle");
             clearCart();
             toast.custom(() => <OrderSuccessToast method="paypal" />, { duration: 7000 });
 
-            // ── Step C: Persist paid status to DB (non-fatal) ────────────────────
-            if (supabaseOrderIdRef.current) {
-              try {
-                await markOrderPaid(supabaseOrderIdRef.current, paypalOrderId, payerId);
-              } catch (dbErr) {
-                // Payment succeeded but DB write failed.
-                // Log all details for manual reconciliation — do NOT touch UI.
-                console.error(
-                  "[CRITICAL] Payment captured but DB update failed. Manual reconciliation required.",
-                  {
-                    supabaseOrderId: supabaseOrderIdRef.current,
-                    paypalOrderId,
-                    payerId,
-                    captureStatus,
-                    error: dbErr,
-                  }
-                );
-              }
+            // ── Step C: Persist order to Supabase (non-fatal) ────────────────
+            try {
+              const dbOrderId = await upsertPendingOrder({
+                customer_name: customer.name,
+                phone: customer.phone,
+                delivery_address: customer.address,
+                items: capturedItems,
+                total_price: safeTotal,
+                promo_code: promoCode ?? undefined,
+                discount_amount: discountAmount,
+                notes: customer.notes ?? undefined,
+              });
+              await markOrderPaid(dbOrderId, paypalOrderId, payerId);
+            } catch (dbErr) {
+              console.error(
+                "[CRITICAL] Payment captured but DB save failed. Manual reconciliation required.",
+                { paypalOrderId, payerId, error: dbErr }
+              );
             }
           }}
           onCancel={() => {
-            // Ignore cancel events that arrive after a successful capture
             if (capturedRef.current) return;
             setStatus("cancelled");
           }}
           onError={(err) => {
-            // CRITICAL GUARD: PayPal SDK can fire onError after a successful capture
-            // (e.g. SDK internal cleanup errors). Never overwrite a confirmed payment.
+            // PayPal SDK can fire onError after a successful capture — suppress it
             if (capturedRef.current) {
-              console.warn(
-                "[PayPal] onError fired after successful capture — suppressed to prevent false failure UI.",
-                err
-              );
+              console.warn("[PayPal] onError after capture — suppressed.", err);
               return;
             }
             console.error("[PayPal] SDK error:", err);
-            if (isNetworkError(err)) {
-              setStatus("error");
-              setMessage(
-                "Verbindung unterbrochen. Bitte prüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
-              );
-            } else {
-              setStatus("error");
-              setMessage("Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.");
-            }
+            setStatus("error");
+            setMessage("Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.");
           }}
         />
       )}
