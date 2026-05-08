@@ -8,6 +8,9 @@ interface OfflineOrderButtonProps {
   method: "cash" | "ec";
   customer: CustomerInfo;
   discountedTotal: number;
+  deliveryFee: number;
+  deliveryDistanceKm: number | null;
+  customerCoords: { lat: number; lng: number } | null;
   promoCode: string | null;
   discountAmount: number;
 }
@@ -73,6 +76,9 @@ export function OfflineOrderButton({
   method,
   customer,
   discountedTotal,
+  deliveryFee,
+  deliveryDistanceKm,
+  customerCoords,
   promoCode,
   discountAmount,
 }: OfflineOrderButtonProps) {
@@ -105,7 +111,12 @@ export function OfflineOrderButton({
           qty: i.qty,
           sizeLabel: i.sizeLabel,
         })),
-        total_price: discountedTotal,
+        subtotal: discountedTotal,
+        delivery_fee: deliveryFee,
+        total_price: Math.max(0.01, discountedTotal + deliveryFee),
+        customer_lat: customerCoords?.lat,
+        customer_lng: customerCoords?.lng,
+        delivery_distance_km: deliveryDistanceKm ?? undefined,
         promo_code: promoCode ?? undefined,
         discount_amount: discountAmount,
         notes: customer.notes ?? undefined,

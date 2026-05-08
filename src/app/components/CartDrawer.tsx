@@ -7,6 +7,7 @@ import { PromoCodeInput, type AppliedPromo } from "./PromoCodeInput";
 import { useState, useCallback } from "react";
 import type { CustomerInfo } from "../lib/supabase";
 import { useStoreStatus } from "../lib/useBusinessHours";
+import { useDeliveryFee } from "../lib/useDeliveryFee";
 
 interface CartDrawerProps {
   open: boolean;
@@ -25,6 +26,12 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const discountedTotal = appliedPromo
     ? Math.max(0.01, total - appliedPromo.discountAmount)
     : total;
+
+  const deliveryAddress = customer?.address ?? null;
+  const { distanceKm, fee: deliveryFee, loading: feeLoading, error: feeError, coords: customerCoords } =
+    useDeliveryFee(deliveryAddress);
+
+  const finalTotal = discountedTotal + deliveryFee;
 
   return (
     <>
@@ -155,10 +162,40 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     </span>
                   </div>
                 )}
+                {/* Delivery fee row — visible once customer enters address */}
+                {deliveryAddress && (
+                  <div className="space-y-1">
+                    {feeLoading && (
+                      <div className="flex items-center justify-between text-sm text-gray-400">
+                        <span>🚚 Lieferkosten</span>
+                        <span className="text-xs animate-pulse">Berechnung…</span>
+                      </div>
+                    )}
+                    {feeError && !feeLoading && (
+                      <p className="text-xs text-red-500">{feeError}</p>
+                    )}
+                    {!feeLoading && !feeError && distanceKm !== null && (
+                      <>
+                        <div className="flex items-center justify-between text-sm text-gray-500">
+                          <span>📍 Entfernung</span>
+                          <span>{distanceKm.toFixed(1).replace(".", ",")} km</span>
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-gray-500">🚚 Lieferkosten</span>
+                          <span className={deliveryFee === 0 ? "text-green-600 font-semibold" : "font-semibold"}>
+                            {deliveryFee === 0
+                              ? "Kostenlos"
+                              : `${deliveryFee.toFixed(2).replace(".", ",")} €`}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
                 <div className="flex items-center justify-between border-t border-gray-100 pt-1.5">
                   <span className="text-base font-bold text-gray-900">Gesamtbetrag</span>
                   <span className="text-xl font-bold" style={{ color: "#ec6408" }}>
-                    {discountedTotal.toFixed(2).replace(".", ",")} €
+                    {finalTotal.toFixed(2).replace(".", ",")} €
                   </span>
                 </div>
               </div>
@@ -237,6 +274,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                           method={paymentMethod}
                           customer={customer}
                           discountedTotal={discountedTotal}
+                          deliveryFee={deliveryFee}
+                          deliveryDistanceKm={distanceKm}
+                          customerCoords={customerCoords}
                           promoCode={appliedPromo?.code ?? null}
                           discountAmount={appliedPromo?.discountAmount ?? 0}
                         />
@@ -244,6 +284,9 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                         <PayPalButton
                           customer={customer}
                           discountedTotal={discountedTotal}
+                          deliveryFee={deliveryFee}
+                          deliveryDistanceKm={distanceKm}
+                          customerCoords={customerCoords}
                           promoCode={appliedPromo?.code ?? null}
                           discountAmount={appliedPromo?.discountAmount ?? 0}
                         />

@@ -8,11 +8,14 @@ import { OrderSuccessToast } from "./CashOrderButton";
 interface PayPalButtonProps {
   customer: CustomerInfo;
   discountedTotal: number;
+  deliveryFee: number;
+  deliveryDistanceKm: number | null;
+  customerCoords: { lat: number; lng: number } | null;
   promoCode: string | null;
   discountAmount: number;
 }
 
-export function PayPalButton({ customer, discountedTotal, promoCode, discountAmount }: PayPalButtonProps) {
+export function PayPalButton({ customer, discountedTotal, deliveryFee, deliveryDistanceKm, customerCoords, promoCode, discountAmount }: PayPalButtonProps) {
   const { items, clearCart } = useCart();
   const [status, setStatus] = useState<"idle" | "processing" | "error" | "cancelled">("idle");
   const [message, setMessage] = useState("");
@@ -20,7 +23,8 @@ export function PayPalButton({ customer, discountedTotal, promoCode, discountAmo
   // Guards onError / onCancel from overwriting a confirmed payment
   const capturedRef = useRef<boolean>(false);
 
-  const safeTotal = Math.max(0.01, discountedTotal);
+  const finalTotal = Math.max(0.01, discountedTotal + deliveryFee);
+  const safeTotal = finalTotal;
 
   if (items.length === 0) return null;
 
@@ -122,7 +126,12 @@ export function PayPalButton({ customer, discountedTotal, promoCode, discountAmo
                 phone: customer.phone,
                 delivery_address: customer.address,
                 items: capturedItems,
+                subtotal: discountedTotal,
+                delivery_fee: deliveryFee,
                 total_price: safeTotal,
+                customer_lat: customerCoords?.lat,
+                customer_lng: customerCoords?.lng,
+                delivery_distance_km: deliveryDistanceKm ?? undefined,
                 promo_code: promoCode ?? undefined,
                 discount_amount: discountAmount,
                 notes: customer.notes ?? undefined,
