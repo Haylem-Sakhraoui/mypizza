@@ -4,6 +4,8 @@ import { ClosedBanner } from "./components/ClosedBanner";
 import { MenuNav } from "./components/MenuNav";
 import { FrenchTacosSection } from "./components/FrenchTacosSection";
 import { PizzaSection } from "./components/PizzaSection";
+import { PizzabroetcheEckenSection } from "./components/PizzabroetcheEckenSection";
+import { SalatSection } from "./components/SalatSection";
 import { SnacksSection } from "./components/SnacksSection";
 import { KinderMenuSection } from "./components/KinderMenuSection";
 import { BurgersSection } from "./components/BurgersSection";
@@ -27,6 +29,8 @@ export default function App() {
       <MenuNav />
       <KinderMenuSection />
       <ErrorBoundary><PizzaSection /></ErrorBoundary>
+      <ErrorBoundary><PizzabroetcheEckenSection /></ErrorBoundary>
+      <ErrorBoundary><SalatSection /></ErrorBoundary>
       <ErrorBoundary><FrenchTacosSection /></ErrorBoundary>
       <ErrorBoundary><SnacksSection /></ErrorBoundary>
       <ErrorBoundary><BurgersSection /></ErrorBoundary>

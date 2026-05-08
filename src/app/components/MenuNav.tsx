@@ -1,20 +1,35 @@
 import { useEffect, useRef, useState } from "react";
+import { useActiveSlugs } from "../lib/useProducts";
 
-const categories = [
-  { label: "👶 Kinder Menü", id: "kinder-menu" },
-  { label: "🍕 Pizza", id: "pizza" },
-  { label: "🌯 French Tacos", id: "french-tacos" },
-  { label: "🍟 Snacks", id: "snacks" },
-  { label: "🍔 Burger", id: "burger" },
-  { label: "🥤 Getränke", id: "getraenke" },
-  { label: "🍦 Nachtisch", id: "nachtisch" },
+const ALL_CATEGORIES = [
+  { label: "👶 Kinder Menü",            id: "kinder-menu",          slug: "kinder_menue" },
+  { label: "🍕 Pizza",                  id: "pizza",                slug: "pizza" },
+  { label: "🥖 Pizzabrötche & Ecken",   id: "pizzabroetche-ecken",  slug: "pizzabroetche_ecken" },
+  { label: "🥗 Salat",                  id: "salat",                slug: "salat" },
+  { label: "🌯 French Tacos",           id: "french-tacos",         slug: "french-tacos" },
+  { label: "🍟 Snacks",                 id: "snacks",               slug: "snacks" },
+  { label: "🍔 Burger",                 id: "burger",               slug: "burger" },
+  { label: "🥤 Getränke",               id: "getraenke",            slug: "alkoholfreie_getraenke" },
+  { label: "🍦 Nachtisch",              id: "nachtisch",            slug: "nachtisch" },
 ];
+
+// Slugs whose nav button always appears (existing sections)
+const ALWAYS_SHOW = new Set([
+  "kinder_menue", "pizza", "french-tacos", "snacks",
+  "burger", "alkoholfreie_getraenke", "nachtisch",
+]);
 
 export function MenuNav() {
   const [active, setActive] = useState("kinder-menu");
   const [sticky, setSticky] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const activeSlugs = useActiveSlugs();
+
+  // Filter: always-show categories + new categories that have products
+  const categories = ALL_CATEGORIES.filter(
+    (c) => ALWAYS_SHOW.has(c.slug) || activeSlugs.has(c.slug)
+  );
 
   useEffect(() => {
     const observer = new IntersectionObserver(

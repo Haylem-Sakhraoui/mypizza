@@ -48,6 +48,8 @@ export function Navbar() {
             {[
               { label: "Kinder Menü", id: "kinder-menu" },
               { label: "Pizzen", id: "pizza" },
+              { label: "Pizzabrötche & Ecken", id: "pizzabroetche-ecken" },
+              { label: "Salat", id: "salat" },
               { label: "French Tacos", id: "french-tacos" },
               { label: "Snacks", id: "snacks" },
               { label: "Burger", id: "burger" },

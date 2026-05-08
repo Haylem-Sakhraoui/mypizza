@@ -148,3 +148,28 @@ export function useExtras(categorySlug: string): { extras: string[]; loading: bo
 
   return { extras, loading };
 }
+
+/**
+ * Returns the set of category slugs that have at least one available product.
+ * Used by MenuNav and Navbar to hide buttons for empty categories.
+ */
+export function useActiveSlugs(): Set<string> {
+  const [slugs, setSlugs] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    supabase
+      .from("products")
+      .select("category_id, categories(slug)")
+      .eq("is_available", true)
+      .then(({ data }) => {
+        const active = new Set<string>();
+        (data ?? []).forEach((row: any) => {
+          const slug = row.categories?.slug;
+          if (slug) active.add(slug);
+        });
+        setSlugs(active);
+      });
+  }, []);
+
+  return slugs;
+}
