@@ -11,6 +11,7 @@ interface OfflineOrderButtonProps {
   deliveryFee: number;
   deliveryDistanceKm: number | null;
   customerCoords: { lat: number; lng: number } | null;
+  orderMode: "delivery" | "pickup";
   promoCode: string | null;
   discountAmount: number;
 }
@@ -79,6 +80,7 @@ export function OfflineOrderButton({
   deliveryFee,
   deliveryDistanceKm,
   customerCoords,
+  orderMode,
   promoCode,
   discountAmount,
 }: OfflineOrderButtonProps) {
@@ -114,6 +116,7 @@ export function OfflineOrderButton({
         subtotal: discountedTotal,
         delivery_fee: deliveryFee,
         total_price: Math.max(0.01, discountedTotal + deliveryFee),
+        order_mode: orderMode,
         customer_lat: customerCoords?.lat,
         customer_lng: customerCoords?.lng,
         delivery_distance_km: deliveryDistanceKm ?? undefined,

@@ -11,11 +11,12 @@ interface PayPalButtonProps {
   deliveryFee: number;
   deliveryDistanceKm: number | null;
   customerCoords: { lat: number; lng: number } | null;
+  orderMode: "delivery" | "pickup";
   promoCode: string | null;
   discountAmount: number;
 }
 
-export function PayPalButton({ customer, discountedTotal, deliveryFee, deliveryDistanceKm, customerCoords, promoCode, discountAmount }: PayPalButtonProps) {
+export function PayPalButton({ customer, discountedTotal, deliveryFee, deliveryDistanceKm, customerCoords, orderMode, promoCode, discountAmount }: PayPalButtonProps) {
   const { items, clearCart } = useCart();
   const [status, setStatus] = useState<"idle" | "processing" | "error" | "cancelled">("idle");
   const [message, setMessage] = useState("");
@@ -129,6 +130,7 @@ export function PayPalButton({ customer, discountedTotal, deliveryFee, deliveryD
                 subtotal: discountedTotal,
                 delivery_fee: deliveryFee,
                 total_price: safeTotal,
+                order_mode: orderMode,
                 customer_lat: customerCoords?.lat,
                 customer_lng: customerCoords?.lng,
                 delivery_distance_km: deliveryDistanceKm ?? undefined,

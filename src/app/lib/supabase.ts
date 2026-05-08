@@ -34,9 +34,10 @@ export async function upsertPendingOrder(payload: {
   phone: string;
   delivery_address: DeliveryAddress;
   items: OrderItem[];
-  subtotal: number;          // discounted item total, before delivery fee
+  subtotal: number;
   delivery_fee: number;
-  total_price: number;       // subtotal + delivery_fee (DB trigger recalculates from coords)
+  total_price: number;
+  order_mode?: "delivery" | "pickup";
   customer_lat?: number;
   customer_lng?: number;
   delivery_distance_km?: number;
@@ -56,6 +57,7 @@ export async function upsertPendingOrder(payload: {
         subtotal: payload.subtotal,
         delivery_fee: payload.delivery_fee,
         total_price: payload.total_price,
+        order_mode: payload.order_mode ?? "delivery",
         customer_lat: payload.customer_lat ?? null,
         customer_lng: payload.customer_lng ?? null,
         delivery_distance_km: payload.delivery_distance_km ?? null,
@@ -108,6 +110,7 @@ export async function placeOfflineOrder(
     subtotal: number;
     delivery_fee: number;
     total_price: number;
+    order_mode?: "delivery" | "pickup";
     customer_lat?: number;
     customer_lng?: number;
     delivery_distance_km?: number;

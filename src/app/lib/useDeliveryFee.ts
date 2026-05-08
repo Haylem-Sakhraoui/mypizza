@@ -16,7 +16,7 @@ export interface DeliveryFeeResult {
   coords: Pick<GeocoderResult, "lat" | "lng"> | null;
 }
 
-const DEBOUNCE_MS = 900; // Nominatim: respect 1 req/s
+const DEBOUNCE_MS = 500; // fast enough for UX, Nominatim allows 1 req/s
 
 /**
  * Given a delivery address, geocodes it (debounced) and returns:
@@ -43,6 +43,7 @@ export function useDeliveryFee(address: DeliveryAddress | null): DeliveryFeeResu
   useEffect(() => {
     // Need at least street + plz to geocode meaningfully
     if (!address || !address.street.trim() || !address.plz.trim()) {
+      lastKeyRef.current = ""; // clear cache so the same address re-geocodes after a mode switch
       setResult({ distanceKm: null, fee: 0, loading: false, error: null, coords: null });
       return;
     }

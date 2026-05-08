@@ -7,6 +7,8 @@ const STORAGE_KEY = "mypizza_delivery_info";
 
 interface DeliveryFormProps {
   onValid: (info: CustomerInfo) => void;
+  onAddressChange?: (address: { street: string; plz: string; city: string } | null) => void;
+  mode?: "delivery" | "pickup";
 }
 
 type FormValues = {
@@ -27,11 +29,12 @@ function loadSaved(): Partial<FormValues> {
   }
 }
 
-export function DeliveryForm({ onValid }: DeliveryFormProps) {
-  // Keep onValid in a ref so it is never a useEffect dependency.
-  // This breaks the parent-rerender → new callback → infinite-loop cycle.
+export function DeliveryForm({ onValid, onAddressChange, mode = "delivery" }: DeliveryFormProps) {
+  const isPickup = mode === "pickup";
   const onValidRef = useRef(onValid);
   useEffect(() => { onValidRef.current = onValid; });
+  const onAddressChangeRef = useRef(onAddressChange);
+  useEffect(() => { onAddressChangeRef.current = onAddressChange; });
 
   const {
     register,
@@ -52,7 +55,7 @@ export function DeliveryForm({ onValid }: DeliveryFormProps) {
   const city   = watch("city")   ?? "";
   const notes  = watch("notes")  ?? "";
 
-  // Effect 1 — localStorage persistence only. No parent callback here.
+  // Effect 1 — localStorage persistence only.
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, phone, street, plz, city, notes }));
@@ -61,23 +64,31 @@ export function DeliveryForm({ onValid }: DeliveryFormProps) {
     }
   }, [name, phone, street, plz, city, notes]);
 
-  // Effect 2 — notify parent. Fires only when isValid or a field value
-  // actually changes (primitive comparison → no spurious re-runs).
+  // Effect 2a — notify parent of raw address as user types (for early geocoding).
+  useEffect(() => {
+    if (isPickup) return;
+    const hasEnough = street.trim().length >= 3 && /^\d{4,6}$/.test(plz.trim());
+    onAddressChangeRef.current?.(
+      hasEnough ? { street: street.trim(), plz: plz.trim(), city: city.trim() || "Erfurt" } : null
+    );
+  }, [street, plz, city, isPickup]);
+
+  // Effect 2b — notify parent when form is fully valid.
   useEffect(() => {
     if (isValid) {
       onValidRef.current({
         name: name.trim(),
         phone: phone.trim(),
         address: {
-          street: street.trim(),
-          plz: plz.trim(),
-          city: city.trim(),
+          street: isPickup ? "" : street.trim(),
+          plz: isPickup ? "" : plz.trim(),
+          city: isPickup ? "" : city.trim(),
         },
         notes: notes.trim() || undefined,
       });
     }
     // onValidRef is intentionally excluded — it's a stable ref, not a value.
-  }, [isValid, name, phone, street, plz, city, notes]);
+  }, [isValid, name, phone, street, plz, city, notes, isPickup]);
 
   const fieldClass = (hasError: boolean) =>
     `w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-colors ${
@@ -89,7 +100,7 @@ export function DeliveryForm({ onValid }: DeliveryFormProps) {
   return (
     <div className="space-y-3">
       <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">
-        Lieferadresse
+        {isPickup ? "Kontaktdaten" : "Lieferadresse"}
       </p>
 
       {/* Name */}
@@ -138,7 +149,8 @@ export function DeliveryForm({ onValid }: DeliveryFormProps) {
         )}
       </div>
 
-      {/* Street */}
+      {/* Street — delivery only */}
+      {!isPickup && (
       <div>
         <div className="relative">
           <MapPin
@@ -158,8 +170,10 @@ export function DeliveryForm({ onValid }: DeliveryFormProps) {
           <p className="text-xs text-red-500 mt-1">{errors.street.message}</p>
         )}
       </div>
+      )}
 
-      {/* PLZ + City */}
+      {/* PLZ + City — delivery only */}
+      {!isPickup && (
       <div className="flex gap-2">
         <div className="w-28 shrink-0">
           <input
@@ -191,6 +205,7 @@ export function DeliveryForm({ onValid }: DeliveryFormProps) {
           )}
         </div>
       </div>
+      )}
 
       {/* Validity indicator */}
       {isValid && (
@@ -198,7 +213,7 @@ export function DeliveryForm({ onValid }: DeliveryFormProps) {
           <span className="w-4 h-4 rounded-full bg-green-100 flex items-center justify-center text-green-600">
             ✓
           </span>
-          Adresse bestätigt — bitte jetzt bezahlen
+          {isPickup ? "Kontaktdaten bestätigt" : "Adresse bestätigt — bitte jetzt bezahlen"}
         </div>
       )}
 
