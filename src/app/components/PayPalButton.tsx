@@ -90,6 +90,32 @@ export function PayPalButton({ customer, discountedTotal, deliveryFee, deliveryD
           onApprove={async (_data, actions) => {
             setStatus("processing");
 
+            // ── Snapshot all data NOW while component is still mounted ────────
+            // clearCart() later unmounts this component — we must capture
+            // everything we need before that happens.
+            const capturedItems = items.map((i) => ({
+              name: i.name,
+              price: i.price,
+              qty: i.qty,
+              sizeLabel: i.sizeLabel,
+              extras: i.extras,
+            }));
+            const snap = {
+              customerName: customer.name,
+              phone: customer.phone,
+              address: customer.address,
+              notes: customer.notes,
+              subtotal: discountedTotal,
+              fee: deliveryFee,
+              total: safeTotal,
+              mode: orderMode,
+              lat: customerCoords?.lat,
+              lng: customerCoords?.lng,
+              distKm: deliveryDistanceKm ?? undefined,
+              promo: promoCode ?? undefined,
+              discount: discountAmount,
+            };
+
             // ── Step A: Capture the payment ───────────────────────────────────
             let details: any;
             try {
@@ -107,44 +133,46 @@ export function PayPalButton({ customer, discountedTotal, deliveryFee, deliveryD
             const paypalOrderId = details.id as string;
             const payerId = details.payer?.payer_id ?? "unknown";
 
-            // Snapshot items before clearCart
-            const capturedItems = items.map((i) => ({
-              name: i.name,
-              price: i.price,
-              qty: i.qty,
-              sizeLabel: i.sizeLabel,
-            }));
-
-            // ── Step B: Show success immediately ─────────────────────────────
-            setStatus("idle");
-            clearCart();
-            toast.custom(() => <OrderSuccessToast method="paypal" />, { duration: 7000 });
-
-            // ── Step C: Persist order to Supabase (non-fatal) ────────────────
+            // ── Step B: Save order to DB BEFORE clearing cart ────────────────
+            // Component must still be mounted so the Supabase call runs reliably.
             try {
               const dbOrderId = await upsertPendingOrder({
-                customer_name: customer.name,
-                phone: customer.phone,
-                delivery_address: customer.address,
+                customer_name: snap.customerName,
+                phone: snap.phone,
+                delivery_address: snap.address,
                 items: capturedItems,
-                subtotal: discountedTotal,
-                delivery_fee: deliveryFee,
-                total_price: safeTotal,
-                order_mode: orderMode,
-                customer_lat: customerCoords?.lat,
-                customer_lng: customerCoords?.lng,
-                delivery_distance_km: deliveryDistanceKm ?? undefined,
-                promo_code: promoCode ?? undefined,
-                discount_amount: discountAmount,
-                notes: customer.notes ?? undefined,
+                subtotal: snap.subtotal,
+                delivery_fee: snap.fee,
+                total_price: snap.total,
+                order_mode: snap.mode,
+                customer_lat: snap.lat,
+                customer_lng: snap.lng,
+                delivery_distance_km: snap.distKm,
+                promo_code: snap.promo,
+                discount_amount: snap.discount,
+                notes: snap.notes ?? undefined,
               });
               await markOrderPaid(dbOrderId, paypalOrderId, payerId);
             } catch (dbErr) {
-              console.error(
-                "[CRITICAL] Payment captured but DB save failed. Manual reconciliation required.",
-                { paypalOrderId, payerId, error: dbErr }
+              // Payment was captured but DB save failed.
+              // Do NOT clear cart — keep state intact so the error is visible.
+              console.error("[CRITICAL] Payment captured but DB save failed.", {
+                paypalOrderId,
+                payerId,
+                error: dbErr,
+              });
+              setStatus("error");
+              setMessage(
+                `Zahlung erhalten (${paypalOrderId}), aber Bestellung konnte nicht gespeichert werden. ` +
+                `Bitte rufen Sie uns an und teilen Sie uns diese Nummer mit: ${paypalOrderId}`
               );
+              return;
             }
+
+            // ── Step C: Only now clear cart and show success ──────────────────
+            setStatus("idle");
+            clearCart();
+            toast.custom(() => <OrderSuccessToast method="paypal" />, { duration: 7000 });
           }}
           onCancel={() => {
             if (capturedRef.current) return;

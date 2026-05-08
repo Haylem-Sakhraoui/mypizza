@@ -112,6 +112,7 @@ export function OfflineOrderButton({
           price: i.price,
           qty: i.qty,
           sizeLabel: i.sizeLabel,
+          extras: i.extras,
         })),
         subtotal: discountedTotal,
         delivery_fee: deliveryFee,

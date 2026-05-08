@@ -25,6 +25,7 @@ export interface OrderItem {
   price: number;
   qty: number;
   sizeLabel?: string;
+  extras?: string[];
 }
 
 // ─── Pre-payment: insert a pending order + its items, return the order UUID ───
@@ -86,6 +87,8 @@ export async function upsertPendingOrder(payload: {
     size_label: item.sizeLabel ?? null,
     unit_price: item.price,
     quantity: item.qty,
+    // Strip price suffix "(+1,00 €)" so admin sees clean names e.g. ["Champigons", "Sucuk"]
+    extras: (item.extras ?? []).map((e) => e.replace(/\s*\([\+\d,\.]+\s*€\)/g, "").trim()),
   }));
 
   const { error: itemsError } = await supabase.from("order_items").insert(itemRows);

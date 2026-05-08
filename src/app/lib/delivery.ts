@@ -7,7 +7,7 @@ export const RESTAURANT = {
 } as const;
 
 export const FREE_DELIVERY_KM = 3.0;
-export const FEE_PER_500M = 1.5;
+export const FEE_PER_500M = 0.5;
 export const MIN_DELIVERY_AMOUNT = 10.0; // minimum cart total (after discount) to allow delivery
 
 // ─── Haversine distance (km) ──────────────────────────────────────────────────
