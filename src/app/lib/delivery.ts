@@ -7,7 +7,7 @@ export const RESTAURANT = {
 } as const;
 
 export const FREE_DELIVERY_KM = 1.0;
-export const FEE_PER_500M = 0.6;
+export const FEE_PER_500M = 0.5;
 export const MIN_DELIVERY_AMOUNT = 10.0; // minimum cart total (after discount) to allow delivery
 export const MAX_DELIVERY_KM = 7.0; // delivery not available beyond this distance
 
