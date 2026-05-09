@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Banknote, CreditCard } from "lucide-react";
+import { Banknote, CreditCard, X } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "../context/CartContext";
 import { placeOfflineOrder, type CustomerInfo } from "../lib/supabase";
@@ -14,9 +14,10 @@ interface OfflineOrderButtonProps {
   orderMode: "delivery" | "pickup";
   promoCode: string | null;
   discountAmount: number;
+  onSuccess?: () => void;
 }
 
-function OrderSuccessToast({ method }: { method: "cash" | "ec" | "paypal" }) {
+function OrderSuccessToast({ method, toastId }: { method: "cash" | "ec" | "paypal"; toastId: string | number }) {
   const paymentLine =
     method === "ec"
       ? "💳 Zahlung per EC-Karte bei Lieferung"
@@ -34,8 +35,26 @@ function OrderSuccessToast({ method }: { method: "cash" | "ec" | "paypal" }) {
         border: "2px solid #ec6408",
         maxWidth: "340px",
         width: "100%",
+        position: "relative",
       }}
     >
+      <button
+        onClick={() => toast.dismiss(toastId)}
+        style={{
+          position: "absolute",
+          top: "10px",
+          right: "10px",
+          background: "none",
+          border: "none",
+          cursor: "pointer",
+          color: "#9ca3af",
+          padding: "2px",
+          lineHeight: 1,
+        }}
+        aria-label="Schließen"
+      >
+        <X size={16} />
+      </button>
       <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
         <span style={{ fontSize: "30px", lineHeight: 1 }}>🍕</span>
         <span style={{ fontWeight: 800, fontSize: "16px", color: "#1a1a1a" }}>
@@ -83,6 +102,7 @@ export function OfflineOrderButton({
   orderMode,
   promoCode,
   discountAmount,
+  onSuccess,
 }: OfflineOrderButtonProps) {
   const { items, clearCart } = useCart();
   const [status, setStatus] = useState<"idle" | "processing" | "error">("idle");
@@ -128,7 +148,8 @@ export function OfflineOrderButton({
 
       clearCart();
       setStatus("idle");
-      toast.custom(() => <OrderSuccessToast method={method} />, { duration: 7000 });
+      toast.custom((t) => <OrderSuccessToast method={method} toastId={t} />, { duration: 7000 });
+      onSuccess?.();
     } catch (err) {
       console.error("[OfflineOrder] Error:", err);
       setStatus("error");

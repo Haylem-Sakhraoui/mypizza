@@ -14,9 +14,10 @@ interface PayPalButtonProps {
   orderMode: "delivery" | "pickup";
   promoCode: string | null;
   discountAmount: number;
+  onSuccess?: () => void;
 }
 
-export function PayPalButton({ customer, discountedTotal, deliveryFee, deliveryDistanceKm, customerCoords, orderMode, promoCode, discountAmount }: PayPalButtonProps) {
+export function PayPalButton({ customer, discountedTotal, deliveryFee, deliveryDistanceKm, customerCoords, orderMode, promoCode, discountAmount, onSuccess }: PayPalButtonProps) {
   const { items, clearCart } = useCart();
   const [status, setStatus] = useState<"idle" | "processing" | "error" | "cancelled">("idle");
   const [message, setMessage] = useState("");
@@ -172,7 +173,8 @@ export function PayPalButton({ customer, discountedTotal, deliveryFee, deliveryD
             // ── Step C: Only now clear cart and show success ──────────────────
             setStatus("idle");
             clearCart();
-            toast.custom(() => <OrderSuccessToast method="paypal" />, { duration: 7000 });
+            toast.custom((t) => <OrderSuccessToast method="paypal" toastId={t} />, { duration: 7000 });
+            onSuccess?.();
           }}
           onCancel={() => {
             if (capturedRef.current) return;

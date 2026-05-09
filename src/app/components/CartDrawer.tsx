@@ -24,8 +24,26 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "ec" | "paypal">("cash");
   const [orderMode, setOrderMode] = useState<"delivery" | "pickup">("delivery");
+  // addressKey: incrementing forces DeliveryForm to re-mount (clears autofilled saved address)
+  const [addressKey, setAddressKey] = useState(0);
   // liveAddress: updated as user types so geocoding starts early, not after full form validation
   const [liveAddress, setLiveAddress] = useState<{ street: string; plz: string; city: string } | null>(null);
+
+  const STORAGE_KEY = "mypizza_delivery_info";
+
+  const handleClearAddress = () => {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}");
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        name: saved.name ?? "",
+        phone: saved.phone ?? "",
+        street: "", plz: "", city: "", notes: "",
+      }));
+    } catch { /* ignore */ }
+    setLiveAddress(null);
+    setCustomer(null);
+    setAddressKey((k) => k + 1);
+  };
 
   const handleModeSwitch = (mode: "delivery" | "pickup") => {
     setOrderMode(mode);
@@ -277,10 +295,17 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   {tooFar && (
                     <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
                       <span className="text-base leading-none mt-0.5">🚫</span>
-                      <p className="text-xs text-red-800 font-medium">
+                      <p className="text-xs text-red-800 font-medium flex-1">
                         Ihre Adresse liegt außerhalb unseres Liefergebiets ({distanceKm!.toFixed(1).replace(".", ",")} km).
-                        Wir liefern nur bis <strong>{MAX_DELIVERY_KM} km</strong>. Bitte wählen Sie Selbstabholung.
+                        Wir liefern nur bis <strong>{MAX_DELIVERY_KM} km</strong>. Bitte wählen Sie eine andere Adresse oder Selbstabholung.
                       </p>
+                      <button
+                        onClick={handleClearAddress}
+                        className="shrink-0 p-1 rounded-full hover:bg-red-100 text-red-400 hover:text-red-600 transition-colors"
+                        title="Andere Adresse eingeben"
+                      >
+                        <X size={16} />
+                      </button>
                     </div>
                   )}
 
@@ -308,7 +333,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
                   {/* Step 1: Contact / delivery form */}
                   {!belowMinOrder && !tooFar && (
-                    <DeliveryForm onValid={handleValid} onAddressChange={setLiveAddress} mode={orderMode} />
+                    <DeliveryForm key={addressKey} onValid={handleValid} onAddressChange={setLiveAddress} mode={orderMode} />
                   )}
 
                   {/* Step 2: Payment method selector — only after form is valid AND fee is confirmed */}
@@ -378,6 +403,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                               orderMode={orderMode}
                               promoCode={appliedPromo?.code ?? null}
                               discountAmount={appliedPromo?.discountAmount ?? 0}
+                              onSuccess={onClose}
                             />
                           ) : (
                             <PayPalButton
@@ -389,6 +415,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                               orderMode={orderMode}
                               promoCode={appliedPromo?.code ?? null}
                               discountAmount={appliedPromo?.discountAmount ?? 0}
+                              onSuccess={onClose}
                             />
                           )}
                         </>
