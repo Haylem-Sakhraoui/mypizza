@@ -6,9 +6,10 @@ export const RESTAURANT = {
   address: "Schmidtstedter Straße 28, 99084 Erfurt",
 } as const;
 
-export const FREE_DELIVERY_KM = 3.0;
-export const FEE_PER_500M = 0.55;
+export const FREE_DELIVERY_KM = 1.0;
+export const FEE_PER_500M = 0.6;
 export const MIN_DELIVERY_AMOUNT = 10.0; // minimum cart total (after discount) to allow delivery
+export const MAX_DELIVERY_KM = 7.0; // delivery not available beyond this distance
 
 // ─── Haversine distance (km) ──────────────────────────────────────────────────
 

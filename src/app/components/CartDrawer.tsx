@@ -8,7 +8,7 @@ import { useState, useCallback } from "react";
 import type { CustomerInfo } from "../lib/supabase";
 import { useStoreStatus } from "../lib/useBusinessHours";
 import { useDeliveryFee } from "../lib/useDeliveryFee";
-import { MIN_DELIVERY_AMOUNT } from "../lib/delivery";
+import { MIN_DELIVERY_AMOUNT, MAX_DELIVERY_KM } from "../lib/delivery";
 
 interface CartDrawerProps {
   open: boolean;
@@ -52,6 +52,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
 
   const finalTotal = discountedTotal + (orderMode === "delivery" ? deliveryFee : 0);
   const belowMinOrder = orderMode === "delivery" && discountedTotal < MIN_DELIVERY_AMOUNT;
+  const tooFar = orderMode === "delivery" && distanceKm !== null && distanceKm > MAX_DELIVERY_KM;
 
   return (
     <>
@@ -272,8 +273,19 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     </button>
                   </div>
 
+                  {/* Too far warning for delivery */}
+                  {tooFar && (
+                    <div className="flex items-start gap-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2.5">
+                      <span className="text-base leading-none mt-0.5">🚫</span>
+                      <p className="text-xs text-red-800 font-medium">
+                        Ihre Adresse liegt außerhalb unseres Liefergebiets ({distanceKm!.toFixed(1).replace(".", ",")} km).
+                        Wir liefern nur bis <strong>{MAX_DELIVERY_KM} km</strong>. Bitte wählen Sie Selbstabholung.
+                      </p>
+                    </div>
+                  )}
+
                   {/* Min order warning for delivery */}
-                  {orderMode === "delivery" && belowMinOrder && (
+                  {orderMode === "delivery" && belowMinOrder && !tooFar && (
                     <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
                       <span className="text-base leading-none mt-0.5">⚠️</span>
                       <p className="text-xs text-amber-800 font-medium">
@@ -295,12 +307,12 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   )}
 
                   {/* Step 1: Contact / delivery form */}
-                  {!belowMinOrder && (
+                  {!belowMinOrder && !tooFar && (
                     <DeliveryForm onValid={handleValid} onAddressChange={setLiveAddress} mode={orderMode} />
                   )}
 
                   {/* Step 2: Payment method selector — only after form is valid AND fee is confirmed */}
-                  {customer && !belowMinOrder && (
+                  {customer && !belowMinOrder && !tooFar && (
                     <div className="pt-1 space-y-3">
                       <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">
                         Zahlungsmethode
@@ -385,7 +397,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   )}
 
                   {/* Hint shown before form is complete */}
-                  {!customer && !belowMinOrder && (
+                  {!customer && !belowMinOrder && !tooFar && (
                     <p className="text-center text-xs text-gray-400">
                       {orderMode === "pickup"
                         ? "Bitte geben Sie Ihren Namen und Ihre Telefonnummer ein."
