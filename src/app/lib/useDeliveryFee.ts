@@ -34,7 +34,7 @@ export function useDeliveryFee(address: DeliveryAddress | null): DeliveryFeeResu
   const [result, setResult] = useState<DeliveryFeeResult>({
     distanceKm: null,
     fee: 0,
-    minOrderAmount: 15,
+    minOrderAmount: 10,
     loading: false,
     error: null,
     coords: null,
@@ -47,7 +47,7 @@ export function useDeliveryFee(address: DeliveryAddress | null): DeliveryFeeResu
     // Need at least street + plz to geocode meaningfully
     if (!address || !address.street.trim() || !address.plz.trim()) {
       lastKeyRef.current = ""; // clear cache so the same address re-geocodes after a mode switch
-      setResult({ distanceKm: null, fee: 0, minOrderAmount: 15, loading: false, error: null, coords: null });
+      setResult({ distanceKm: null, fee: 0, minOrderAmount: 10, loading: false, error: null, coords: null });
       return;
     }
 
@@ -63,7 +63,7 @@ export function useDeliveryFee(address: DeliveryAddress | null): DeliveryFeeResu
       try {
         const geo = await geocodeAddress(address.street, address.plz, address.city);
         if (!geo) {
-          setResult({ distanceKm: null, fee: 0, minOrderAmount: 15, loading: false, error: "Adresse nicht gefunden. Bitte prüfen Sie Ihre Eingabe.", coords: null });
+          setResult({ distanceKm: null, fee: 0, minOrderAmount: 10, loading: false, error: "Adresse nicht gefunden. Bitte prüfen Sie Ihre Eingabe.", coords: null });
           return;
         }
         const distKm = haversineKm(RESTAURANT.lat, RESTAURANT.lng, geo.lat, geo.lng);

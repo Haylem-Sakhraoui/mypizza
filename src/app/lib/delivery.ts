@@ -13,6 +13,7 @@ export const MAX_DELIVERY_KM = 7.0; // delivery not available beyond this distan
 // fee        — surcharge added to order total
 // minOrder   — minimum cart total (after discount) required for delivery
 export const DELIVERY_TIERS = [
+  { maxKm: 1,   fee: 0.00, minOrder: 10 },
   { maxKm: 2,   fee: 0.00, minOrder: 15 },
   { maxKm: 3,   fee: 1.50, minOrder: 20 },
   { maxKm: 4,   fee: 2.00, minOrder: 20 },
