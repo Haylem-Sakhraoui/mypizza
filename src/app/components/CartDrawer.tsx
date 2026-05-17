@@ -8,7 +8,7 @@ import { useState, useCallback } from "react";
 import type { CustomerInfo } from "../lib/supabase";
 import { useStoreStatus } from "../lib/useBusinessHours";
 import { useDeliveryFee } from "../lib/useDeliveryFee";
-import { MIN_DELIVERY_AMOUNT, MAX_DELIVERY_KM } from "../lib/delivery";
+import { MAX_DELIVERY_KM } from "../lib/delivery";
 
 interface CartDrawerProps {
   open: boolean;
@@ -58,7 +58,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
   // Use liveAddress (typed by user) for geocoding — starts early, before form is fully valid.
   // Fall back to customer.address once confirmed (same value, just ensures continuity).
   const deliveryAddress = orderMode === "delivery" ? (liveAddress ?? customer?.address ?? null) : null;
-  const { distanceKm, fee: deliveryFee, loading: feeLoading, error: feeError, coords: customerCoords } =
+  const { distanceKm, fee: deliveryFee, minOrderAmount, loading: feeLoading, error: feeError, coords: customerCoords } =
     useDeliveryFee(deliveryAddress);
 
   // Fee is only "ready" for delivery once geocoding has resolved (distanceKm known).
@@ -69,7 +69,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
     (!feeLoading && !feeError && distanceKm !== null);
 
   const finalTotal = discountedTotal + (orderMode === "delivery" ? deliveryFee : 0);
-  const belowMinOrder = orderMode === "delivery" && discountedTotal < MIN_DELIVERY_AMOUNT;
+  const belowMinOrder = orderMode === "delivery" && discountedTotal < minOrderAmount;
   const tooFar = orderMode === "delivery" && distanceKm !== null && distanceKm > MAX_DELIVERY_KM;
 
   return (
@@ -314,7 +314,7 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                     <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
                       <span className="text-base leading-none mt-0.5">⚠️</span>
                       <p className="text-xs text-amber-800 font-medium">
-                        Mindestbestellwert für Lieferung: <strong>{MIN_DELIVERY_AMOUNT.toFixed(2).replace(".", ",")} €</strong>.
+                        Mindestbestellwert für Lieferung: <strong>{minOrderAmount.toFixed(2).replace(".", ",")} €</strong>.
                         Bitte fügen Sie weitere Artikel hinzu oder wählen Sie Selbstabholung.
                       </p>
                     </div>

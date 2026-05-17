@@ -6,10 +6,32 @@ export const RESTAURANT = {
   address: "Schmidtstedter Straße 28, 99084 Erfurt",
 } as const;
 
-export const FREE_DELIVERY_KM = 1.0;
-export const FEE_PER_500M = 0.35;
-export const MIN_DELIVERY_AMOUNT = 10.0; // minimum cart total (after discount) to allow delivery
 export const MAX_DELIVERY_KM = 7.0; // delivery not available beyond this distance
+
+// ─── Distance-based delivery tiers ───────────────────────────────────────────
+// Each tier applies when distanceKm <= maxKm.
+// fee        — surcharge added to order total
+// minOrder   — minimum cart total (after discount) required for delivery
+export const DELIVERY_TIERS = [
+  { maxKm: 2,   fee: 0.00, minOrder: 15 },
+  { maxKm: 3,   fee: 1.50, minOrder: 20 },
+  { maxKm: 4,   fee: 2.00, minOrder: 20 },
+  { maxKm: 5,   fee: 2.50, minOrder: 20 },
+  { maxKm: 6,   fee: 3.00, minOrder: 30 },
+  { maxKm: 7,   fee: 3.50, minOrder: 30 },
+] as const;
+
+/** Delivery fee in € for a given distance. Returns 0 if no tier matches (too far handled separately). */
+export function calculateDeliveryFee(distanceKm: number): number {
+  const tier = DELIVERY_TIERS.find((t) => distanceKm <= t.maxKm);
+  return tier ? tier.fee : 0;
+}
+
+/** Minimum cart total required for delivery at a given distance. */
+export function getMinOrderAmount(distanceKm: number): number {
+  const tier = DELIVERY_TIERS.find((t) => distanceKm <= t.maxKm);
+  return tier ? tier.minOrder : 0;
+}
 
 // ─── Haversine distance (km) ──────────────────────────────────────────────────
 
@@ -26,14 +48,6 @@ export function haversineKm(
       Math.cos((lat2 * Math.PI) / 180) *
       Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.asin(Math.sqrt(a));
-}
-
-// ─── Delivery fee ─────────────────────────────────────────────────────────────
-
-export function calculateDeliveryFee(distanceKm: number): number {
-  if (distanceKm <= FREE_DELIVERY_KM) return 0;
-  const extraMeters = (distanceKm - FREE_DELIVERY_KM) * 1000;
-  return Math.ceil(extraMeters / 500) * FEE_PER_500M;
 }
 
 // ─── Geocoding via Nominatim ──────────────────────────────────────────────────
