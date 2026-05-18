@@ -158,12 +158,12 @@ export function SpecialOffers() {
               🎁
             </div>
             <div>
-              <p className="text-white font-black text-lg">Jede 8. Pizza ist GRATIS!</p>
-              <p className="text-orange-100 text-sm">Bestelle 7 Pizzen und die 8. bekommst du kostenlos.</p>
+              <p className="text-white font-black text-lg">Jede 5. Pizza ist GRATIS!</p>
+              <p className="text-orange-100 text-sm">Bestelle 4 Pizzen und die 5. bekommst du kostenlos.</p>
             </div>
           </div>
           <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+            {[1, 2, 3, 4, 5].map((n) => (
               <div
                 key={n}
                 className="w-8 h-8 bg-white/30 border-2 border-white/50 rounded-full flex items-center justify-center text-xs text-white font-bold"
