@@ -15,11 +15,11 @@ export const MAX_DELIVERY_KM = 7.0; // delivery not available beyond this distan
 export const DELIVERY_TIERS = [
   { maxKm: 1,   fee: 0.00, minOrder: 10 },
   { maxKm: 2,   fee: 0.00, minOrder: 15 },
-  { maxKm: 3,   fee: 1.50, minOrder: 20 },
-  { maxKm: 4,   fee: 2.00, minOrder: 20 },
-  { maxKm: 5,   fee: 2.50, minOrder: 20 },
-  { maxKm: 6,   fee: 3.00, minOrder: 30 },
-  { maxKm: 7,   fee: 3.50, minOrder: 30 },
+  { maxKm: 3,   fee: 1.50, minOrder: 17 },
+  { maxKm: 4,   fee: 1.90, minOrder: 18 },
+  { maxKm: 5,   fee: 2.30, minOrder: 20 },
+  { maxKm: 6,   fee: 3.50, minOrder: 20 },
+  { maxKm: 7,   fee: 3.50, minOrder: 22 },
 ] as const;
 
 /** Delivery fee in € for a given distance. Returns 0 if no tier matches (too far handled separately). */
