@@ -131,12 +131,12 @@ export function Footer() {
             <p className="text-white font-bold mb-4 text-sm">Treue-Programm</p>
             <div className="bg-white/5 border border-white/10 rounded-2xl p-4">
               <div className="text-2xl mb-2">🎁</div>
-              <p className="text-white font-bold text-sm mb-1">Jede 8. Pizza GRATIS!</p>
+              <p className="text-white font-bold text-sm mb-1">Jede 5. Pizza GRATIS!</p>
               <p className="text-gray-400 text-xs leading-relaxed">
-                Bestelle regelmäßig und erhalte deine 8. Pizza kostenlos. Frag beim Bestellen nach!
+                Bestelle regelmäßig und erhalte deine 5. Pizza kostenlos. Frag beim Bestellen nach!
               </p>
               <div className="mt-3 flex gap-1 flex-wrap">
-                {[...Array(7)].map((_, i) => (
+                {[...Array(4)].map((_, i) => (
                   <div
                     key={i}
                     className="w-7 h-7 rounded-full border border-white/30 flex items-center justify-center text-xs text-gray-400"
