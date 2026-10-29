@@ -100,7 +100,7 @@ export function Footer() {
               <div className="flex items-start gap-3">
                 <MapPin size={16} style={{ color: "#ec6408" }} className="mt-0.5 flex-shrink-0" />
                 <div>
-                  <p className="text-gray-300 text-sm">Schmiedstedter Str 28</p>
+                  <p className="text-gray-300 text-sm">Schmidstedter Str 28</p>
                   <p className="text-gray-400 text-xs">99084 Erfurt</p>
                 </div>
               </div>
