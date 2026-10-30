@@ -22,10 +22,10 @@ export function Footer() {
       <div className="py-10 px-4 text-center border-b border-white/10"
         style={{ background: "linear-gradient(135deg, #ec6408, #ff8c42)" }}>
         <h3 className="text-white mb-2" style={{ fontWeight: 800, fontSize: "clamp(1.3rem, 3vw, 1.8rem)" }}>
-          Hunger? Wir liefern bis 03:00 Uhr! 🍕
+          Hunger? Wir liefern bis 03:30 Uhr! 🍕
         </h3>
         <p className="text-orange-100 text-sm mb-5">
-          Einfach anrufen – frisch zubereitet, schnell geliefert.
+          Einfach anrufen – frisch zubereitet, schnell geliefert.🍕
         </p>
         <a href="tel:01771313310">
           <button className="px-8 py-3 bg-white rounded-full font-black text-base hover:scale-105 hover:shadow-xl transition-all duration-200"

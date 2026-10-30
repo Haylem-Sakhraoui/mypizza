@@ -130,7 +130,7 @@ export function Hero() {
             Jetzt bestellen und zu Hause genießen
           </p>
           <p className="hero-line-3 mb-10 text-base" style={{ color: "#ec6408", fontWeight: 600 }}>
-            Einfach telefonisch bestellen und wir liefern 🚀
+            Online bestellen und wir liefern 🚀
           </p>
 
           {/* CTA Buttons */}
