@@ -427,8 +427,8 @@ export function CartDrawer({ open, onClose }: CartDrawerProps) {
                   {!customer && !belowMinOrder && !tooFar && (
                     <p className="text-center text-xs text-gray-400">
                       {orderMode === "pickup"
-                        ? "Bitte geben Sie Ihren Namen und Ihre Telefonnummer ein."
-                        : "Bitte füllen Sie die Lieferadresse aus, um fortzufahren."}
+                        ? "Bitte geben Sie Ihren Namen, Ihre Telefonnummer und E-Mail-Adresse ein."
+                        : "Bitte füllen Sie Ihre Kontaktdaten und Lieferadresse aus, um fortzufahren."}
                     </p>
                   )}
                 </>

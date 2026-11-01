@@ -104,6 +104,8 @@ export function PayPalButton({ customer, discountedTotal, deliveryFee, deliveryD
             const snap = {
               customerName: customer.name,
               phone: customer.phone,
+              email: customer.email,
+              newsletterConsent: customer.newsletterConsent,
               address: customer.address,
               notes: customer.notes,
               subtotal: discountedTotal,
@@ -140,6 +142,8 @@ export function PayPalButton({ customer, discountedTotal, deliveryFee, deliveryD
               const dbOrderId = await upsertPendingOrder({
                 customer_name: snap.customerName,
                 phone: snap.phone,
+                customer_email: snap.email,
+                newsletter_consent: snap.newsletterConsent,
                 delivery_address: snap.address,
                 items: capturedItems,
                 subtotal: snap.subtotal,
@@ -195,5 +199,4 @@ export function PayPalButton({ customer, discountedTotal, deliveryFee, deliveryD
     </div>
   );
 }
-
 

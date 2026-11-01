@@ -1,12 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
-import { MapPin, Phone, User } from "lucide-react";
+import { Mail, MapPin, Phone, User } from "lucide-react";
 import type { CustomerInfo } from "../lib/supabase";
 
 const STORAGE_KEY = "mypizza_delivery_info";
 
 interface DeliveryFormProps {
-  onValid: (info: CustomerInfo) => void;
+  onValid: (info: CustomerInfo | null) => void;
   onAddressChange?: (address: { street: string; plz: string; city: string } | null) => void;
   mode?: "delivery" | "pickup";
 }
@@ -14,6 +14,8 @@ interface DeliveryFormProps {
 type FormValues = {
   name: string;
   phone: string;
+  email: string;
+  newsletterConsent: boolean;
   street: string;
   plz: string;
   city: string;
@@ -42,7 +44,7 @@ export function DeliveryForm({ onValid, onAddressChange, mode = "delivery" }: De
     formState: { errors, isValid },
   } = useForm<FormValues>({
     mode: "onChange",
-    defaultValues: loadSaved(),
+    defaultValues: { email: "", newsletterConsent: false, ...loadSaved() },
   });
 
   // Watch individual fields → each is a primitive string.
@@ -50,6 +52,8 @@ export function DeliveryForm({ onValid, onAddressChange, mode = "delivery" }: De
   // re-trigger effects even when the actual values haven't changed.
   const name   = watch("name")   ?? "";
   const phone  = watch("phone")  ?? "";
+  const email  = watch("email")  ?? "";
+  const newsletterConsent = watch("newsletterConsent") ?? false;
   const street = watch("street") ?? "";
   const plz    = watch("plz")    ?? "";
   const city   = watch("city")   ?? "";
@@ -58,11 +62,13 @@ export function DeliveryForm({ onValid, onAddressChange, mode = "delivery" }: De
   // Effect 1 — localStorage persistence only.
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ name, phone, street, plz, city, notes }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        name, phone, email, newsletterConsent, street, plz, city, notes,
+      }));
     } catch {
       // ignore private-mode quota errors
     }
-  }, [name, phone, street, plz, city, notes]);
+  }, [name, phone, email, newsletterConsent, street, plz, city, notes]);
 
   // Effect 2a — notify parent of raw address as user types (for early geocoding).
   useEffect(() => {
@@ -75,20 +81,25 @@ export function DeliveryForm({ onValid, onAddressChange, mode = "delivery" }: De
 
   // Effect 2b — notify parent when form is fully valid.
   useEffect(() => {
-    if (isValid) {
-      onValidRef.current({
-        name: name.trim(),
-        phone: phone.trim(),
-        address: {
-          street: isPickup ? "" : street.trim(),
-          plz: isPickup ? "" : plz.trim(),
-          city: isPickup ? "" : city.trim(),
-        },
-        notes: notes.trim() || undefined,
-      });
+    if (!isValid) {
+      onValidRef.current(null);
+      return;
     }
+
+    onValidRef.current({
+      name: name.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+      newsletterConsent,
+      address: {
+        street: isPickup ? "" : street.trim(),
+        plz: isPickup ? "" : plz.trim(),
+        city: isPickup ? "" : city.trim(),
+      },
+      notes: notes.trim() || undefined,
+    });
     // onValidRef is intentionally excluded — it's a stable ref, not a value.
-  }, [isValid, name, phone, street, plz, city, notes, isPickup]);
+  }, [isValid, name, phone, email, newsletterConsent, street, plz, city, notes, isPickup]);
 
   const fieldClass = (hasError: boolean) =>
     `w-full px-3 py-2.5 rounded-xl border text-sm outline-none transition-colors ${
@@ -148,6 +159,44 @@ export function DeliveryForm({ onValid, onAddressChange, mode = "delivery" }: De
           <p className="text-xs text-red-500 mt-1">{errors.phone.message}</p>
         )}
       </div>
+
+      {/* Email */}
+      <div>
+        <div className="relative">
+          <Mail
+            size={14}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+          />
+          <input
+            {...register("email", {
+              required: "E-Mail-Adresse erforderlich",
+              pattern: {
+                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                message: "Ungültige E-Mail-Adresse",
+              },
+            })}
+            placeholder="E-Mail-Adresse"
+            type="email"
+            autoComplete="email"
+            className={`${fieldClass(!!errors.email)} pl-8`}
+          />
+        </div>
+        {errors.email && (
+          <p className="text-xs text-red-500 mt-1">{errors.email.message}</p>
+        )}
+      </div>
+
+      {/* Optional newsletter consent */}
+      <label className="flex items-start gap-2 text-xs text-gray-600 cursor-pointer">
+        <input
+          {...register("newsletterConsent")}
+          type="checkbox"
+          className="mt-0.5 h-4 w-4 shrink-0 accent-orange-600"
+        />
+        <span>
+          Ich möchte den Newsletter mit Gutscheinen und Rabattcodes per E-Mail und Post erhalten.
+        </span>
+      </label>
 
       {/* Street — delivery only */}
       {!isPickup && (

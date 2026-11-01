@@ -126,6 +126,8 @@ export function OfflineOrderButton({
       await placeOfflineOrder(method, {
         customer_name: customer.name,
         phone: customer.phone,
+        customer_email: customer.email,
+        newsletter_consent: customer.newsletterConsent,
         delivery_address: customer.address,
         items: items.map((i) => ({
           name: i.name,
@@ -182,4 +184,3 @@ export function OfflineOrderButton({
     </div>
   );
 }
-

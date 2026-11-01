@@ -16,6 +16,8 @@ export interface DeliveryAddress {
 export interface CustomerInfo {
   name: string;
   phone: string;
+  email: string;
+  newsletterConsent: boolean;
   address: DeliveryAddress;
   notes?: string;
 }
@@ -33,6 +35,8 @@ export interface OrderItem {
 export async function upsertPendingOrder(payload: {
   customer_name: string;
   phone: string;
+  customer_email: string;
+  newsletter_consent: boolean;
   delivery_address: DeliveryAddress;
   items: OrderItem[];
   subtotal: number;
@@ -54,6 +58,8 @@ export async function upsertPendingOrder(payload: {
       {
         customer_name: payload.customer_name,
         phone: payload.phone,
+        customer_email: payload.customer_email,
+        newsletter_consent: payload.newsletter_consent,
         delivery_address: payload.delivery_address,
         subtotal: payload.subtotal,
         delivery_fee: payload.delivery_fee,
@@ -108,6 +114,8 @@ export async function placeOfflineOrder(
   payload: {
     customer_name: string;
     phone: string;
+    customer_email: string;
+    newsletter_consent: boolean;
     delivery_address: DeliveryAddress;
     items: OrderItem[];
     subtotal: number;
